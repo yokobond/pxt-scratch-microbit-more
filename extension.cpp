@@ -3,9 +3,20 @@
 
 #define NOTIFY_PERIOD 100
 
-namespace bluetooth {
+namespace ScratchMore {
     ScratchMoreService* _pService = NULL;
     Action _handler;
+
+    enum Slot {
+      //% block="slot0"
+      SLOT0 = 0,
+      //% block="slot1"
+      SLOT1 = 1,
+      //% block="slot2"
+      SLOT2 = 2,
+      //% block="slot3"
+      SLOT3 = 3,
+    };
 
     void notifyScratch() {
         while (NULL != _pService) {
@@ -19,10 +30,11 @@ namespace bluetooth {
     }
 
     /**
-    * Starts a Scratch extension service. The handler must call ``setSensorTemperature``
-    * to update the data sent to Scratch.
+    * Starts a Scratch extension service.
+    * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
     */
-    //% blockId=bluetooth_startScratchMoreService block="Scratch More service"
+    //% blockId=scratchmore_startScratchMoreService block="Scratch More service"
+    //% shim=ScratchMore::startScratchMoreService
     void startScratchMoreService(Action handler) {
         if (NULL != _pService) return;
 
@@ -35,10 +47,11 @@ namespace bluetooth {
     /**
     * Sets the current temperature value on the external temperature sensor
     */
-    //% blockId=bluetooth_setScratchMoreSlot block="Scratch More at Slot %slot put %value"
-    void setScratchMoreSlot(int slot, int value) {
+    //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
+    //% shim=ScratchMore::setScratchMoreSlot
+    void setScratchMoreSlot(Slot slot, int value) {
         if (NULL == _pService) return;
-
-        _pService->setSlot(slot, value);
+        
+        _pService->setSlot((int)slot, value);
     }
 }

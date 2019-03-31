@@ -1,6 +1,18 @@
 // Auto-generated. Do not edit.
 
 
+    declare const enum Slot {
+    //% block="slot0"
+    SLOT0 = 0,
+    //% block="slot1"
+    SLOT1 = 1,
+    //% block="slot2"
+    SLOT2 = 2,
+    //% block="slot3"
+    SLOT3 = 3,
+    }
+
+
     /**
      * Heading angle of compass.
      */

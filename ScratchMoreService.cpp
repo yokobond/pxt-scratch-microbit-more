@@ -364,12 +364,13 @@ void ScratchMoreService::notify(MicroBitEvent)
 
 /**
  * Set value to Slots.
+ * slot (0, 1, 2, 3)
  */
 void ScratchMoreService::setSlot(int slot, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t slotData = (int16_t)value;
-  memcpy(&(txBufferB[10 + slot]), &slotData, 2);
+  memcpy(&(txBufferB[10 + (slot * 2)]), &slotData, 2);
 }
 
 const uint16_t ScratchMoreServiceUUID = 0xf005;

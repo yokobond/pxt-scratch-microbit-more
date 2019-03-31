@@ -1,18 +1,20 @@
 // Auto-generated. Do not edit.
-declare namespace bluetooth {
+declare namespace ScratchMore {
 
     /**
-     * Starts a Scratch extension service. The handler must call ``setSensorTemperature``
-     * to update the data sent to Scratch.
+     * Starts a Scratch extension service.
+     * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
      */
-    //% blockId=bluetooth_startScratchMoreService block="Scratch More service" shim=bluetooth::startScratchMoreService
+    //% blockId=scratchmore_startScratchMoreService block="Scratch More service"
+    //% shim=ScratchMore::startScratchMoreService shim=ScratchMore::startScratchMoreService
     function startScratchMoreService(handler: () => void): void;
 
     /**
      * Sets the current temperature value on the external temperature sensor
      */
-    //% blockId=bluetooth_setScratchMoreSlot block="Scratch More at Slot %slot put %value" shim=bluetooth::setScratchMoreSlot
-    function setScratchMoreSlot(slot: int32, value: int32): void;
+    //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
+    //% shim=ScratchMore::setScratchMoreSlot shim=ScratchMore::setScratchMoreSlot
+    function setScratchMoreSlot(slot: Slot, value: int32): void;
 }
 
 // Auto-generated. Do not edit. Really.
