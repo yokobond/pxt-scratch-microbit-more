@@ -34,7 +34,6 @@ namespace ScratchMore {
     * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
     */
     //% blockId=scratchmore_startScratchMoreService block="Scratch More service"
-    //% shim=ScratchMore::startScratchMoreService
     void startScratchMoreService(Action handler) {
         if (NULL != _pService) return;
 
@@ -48,10 +47,9 @@ namespace ScratchMore {
     * Sets the current temperature value on the external temperature sensor
     */
     //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
-    //% shim=ScratchMore::setScratchMoreSlot
     void setScratchMoreSlot(Slot slot, int value) {
         if (NULL == _pService) return;
-        
+
         _pService->setSlot((int)slot, value);
     }
 }
