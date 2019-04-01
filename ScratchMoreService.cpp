@@ -129,6 +129,34 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
         }
       }
     }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_INPUT)
+    {
+      setInputMode(data[1]);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_OUTPUT)
+    {
+      setDigitalValue(data[1], data[2]);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_PWM)
+    {
+      // value is read as uint16_t little-endian.
+      int value;
+      memcpy(&value, &(data[2]), 2);
+      setAnalogValue(data[1], value);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_SERVO)
+    {
+      // angle is read as uint16_t little-endian.
+      uint16_t angle;
+      memcpy(&angle, &(data[2]), 2);
+      // range is read as uint16_t little-endian.
+      uint16_t range;
+      memcpy(&range, &(data[4]), 2);      
+      // center is read as uint16_t little-endian.
+      uint16_t center;
+      memcpy(&center, &(data[6]), 2);
+      setServoValue((int)data[1], (int)angle, (int)range, (int)center);
+    }
   }
 }
 
@@ -283,14 +311,20 @@ void ScratchMoreService::setDigitalValue(int pinIndex, int value)
   uBit.io.pin[pinIndex].setDigitalValue(value);
 }
 
-void ScratchMoreService::setServoValue(int pinIndex, int value)
-{
-  uBit.io.pin[pinIndex].setServoValue(value);
-}
-
 void ScratchMoreService::setAnalogValue(int pinIndex, int value)
 {
   uBit.io.pin[pinIndex].setAnalogValue(value);
+}
+
+void ScratchMoreService::setServoValue(int pinIndex, int angle, int range, int center)
+{
+  if (range == 0) {
+    uBit.io.pin[pinIndex].setServoValue(angle);
+  } else if (center == 0) {
+    uBit.io.pin[pinIndex].setServoValue(angle, range);
+  } else {  
+    uBit.io.pin[pinIndex].setServoValue(angle, range, center);
+  }
 }
 
 void ScratchMoreService::composeDefaultData(uint8_t *buff)
