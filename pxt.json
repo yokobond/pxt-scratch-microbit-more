@@ -1,6 +1,6 @@
 {
     "name": "pxt-scratch-more",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "",
     "dependencies": {
         "core": "*",
