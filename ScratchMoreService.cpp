@@ -303,7 +303,7 @@ void ScratchMoreService::updateAnalogValues()
 
 void ScratchMoreService::setInputMode(int pinIndex)
 {
-  uBit.io.pin[pinIndex].getAnalogValue(); // Configure the pin as input, but the value is not used.
+  uBit.io.pin[pinIndex].getDigitalValue(); // Configure the pin as input, but the value is not used.
 }
 
 void ScratchMoreService::setDigitalValue(int pinIndex, int value)
