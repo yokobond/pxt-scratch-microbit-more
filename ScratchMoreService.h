@@ -76,12 +76,12 @@ private:
   /**
    * Sending data buffer A.
    */
-  uint8_t txBufferA[20];
+  uint8_t txBuffer01[20];
 
   /**
    * Sending data buffer B.
    */
-  uint8_t txBufferB[20];
+  uint8_t txBuffer02[20];
 
   // Recieving buffer from Scratch3.
   uint8_t rxBuffer[20];
@@ -126,8 +126,8 @@ private:
   int convertToTilt(float radians);
 
   void composeDefaultData(uint8_t *buff);
-  void composeTxBufferA(void);
-  void composeTxBufferB(void);
+  void composeTxBuffer01(void);
+  void composeTxBuffer02(void);
 
   // microbit runtime instance
   MicroBit &uBit;

@@ -344,32 +344,32 @@ void ScratchMoreService::composeDefaultData(uint8_t *buff)
   buff[9] = (uint8_t)gesture;
 }
 
-void ScratchMoreService::composeTxBufferA()
+void ScratchMoreService::composeTxBuffer01()
 {
-  composeDefaultData(txBufferA);
+  composeDefaultData(txBuffer01);
 
   // analog value (0 to 1024) is sent as uint16_t little-endian.
-  memcpy(&(txBufferA[10]), &(analogValues[0]), 2);
-  memcpy(&(txBufferA[12]), &(analogValues[1]), 2);
-  memcpy(&(txBufferA[14]), &(analogValues[2]), 2);
+  memcpy(&(txBuffer01[10]), &(analogValues[0]), 2);
+  memcpy(&(txBuffer01[12]), &(analogValues[1]), 2);
+  memcpy(&(txBuffer01[14]), &(analogValues[2]), 2);
 
   // compassHeading angle (0 - 359) is sent as uint16_t little-endian.
   uint16_t heading = (uint16_t)normalizeCompassHeading(uBit.compass.heading());
-  memcpy(&(txBufferA[16]), &heading, 2);
+  memcpy(&(txBuffer01[16]), &heading, 2);
 
   // level of light amount (0-255) is sent as uint8_t.
-  txBufferA[18] = (uint8_t)uBit.display.readLightLevel();
+  txBuffer01[18] = (uint8_t)uBit.display.readLightLevel();
 
   // More extension format.
-  txBufferA[19] = 0x01;
+  txBuffer01[19] = 0x01;
 }
 
-void ScratchMoreService::composeTxBufferB()
+void ScratchMoreService::composeTxBuffer02()
 {
-  composeDefaultData(txBufferB);
+  composeDefaultData(txBuffer02);
 
   // More extension format.
-  txBufferB[19] = 0x02;
+  txBuffer02[19] = 0x02;
 }
 
 /**
@@ -382,16 +382,16 @@ void ScratchMoreService::notify(MicroBitEvent)
     updateDigitalValues();
     updateAnalogValues();
     updateGesture();
-    composeTxBufferA();
+    composeTxBuffer01();
     uBit.ble->gattServer().notify(
         txCharacteristicHandle,
-        (uint8_t *)&txBufferA,
-        sizeof(txBufferA) / sizeof(txBufferA[0]));
-    composeTxBufferB();
+        (uint8_t *)&txBuffer01,
+        sizeof(txBuffer01) / sizeof(txBuffer01[0]));
+    composeTxBuffer02();
     uBit.ble->gattServer().notify(
         txCharacteristicHandle,
-        (uint8_t *)&txBufferB,
-        sizeof(txBufferB) / sizeof(txBufferB[0]));
+        (uint8_t *)&txBuffer02,
+        sizeof(txBuffer02) / sizeof(txBuffer02[0]));
     resetGesture();
   }
 }
@@ -404,7 +404,7 @@ void ScratchMoreService::setSlot(int slot, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t slotData = (int16_t)value;
-  memcpy(&(txBufferB[10 + (slot * 2)]), &slotData, 2);
+  memcpy(&(txBuffer02[10 + (slot * 2)]), &slotData, 2);
 }
 
 const uint16_t ScratchMoreServiceUUID = 0xf005;
