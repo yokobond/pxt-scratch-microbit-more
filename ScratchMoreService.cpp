@@ -28,7 +28,7 @@ DEALINGS IN THE SOFTWARE.
   */
 #include "ScratchMoreService.h"
 
-int digitalIn[] = {0, 1, 2, 8, 13, 14, 15, 16};
+int gpio[] = {0, 1, 2, 8, 13, 14, 15, 16};
 int analogIn[] = {0, 1, 2};
 
 /**
@@ -40,9 +40,9 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
     : uBit(_uBit)
 {
   // Initialize pin configuration.
-  for (size_t i = 0; i < sizeof(digitalIn) / sizeof(digitalIn[0]); i++)
+  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
-    setInputMode(digitalIn[i]);
+    setInputMode(gpio[i]);
   }
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
@@ -151,7 +151,7 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(&angle, &(data[2]), 2);
       // range is read as uint16_t little-endian.
       uint16_t range;
-      memcpy(&range, &(data[4]), 2);      
+      memcpy(&range, &(data[4]), 2);
       // center is read as uint16_t little-endian.
       uint16_t center;
       memcpy(&center, &(data[6]), 2);
@@ -273,12 +273,12 @@ void ScratchMoreService::resetGesture()
 void ScratchMoreService::updateDigitalValues()
 {
   digitalValues = 0;
-  for (size_t i = 0; i < sizeof(digitalIn) / sizeof(digitalIn[0]); i++)
+  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
-    if (uBit.io.pin[digitalIn[i]].isInput())
+    if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[digitalIn[i]].getDigitalValue(PullUp) == 1 ? 0 : 1)) << digitalIn[i]);
+          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(PullUp) == 1 ? 0 : 1)) << gpio[i]);
     }
   }
 }
@@ -318,11 +318,16 @@ void ScratchMoreService::setAnalogValue(int pinIndex, int value)
 
 void ScratchMoreService::setServoValue(int pinIndex, int angle, int range, int center)
 {
-  if (range == 0) {
+  if (range == 0)
+  {
     uBit.io.pin[pinIndex].setServoValue(angle);
-  } else if (center == 0) {
+  }
+  else if (center == 0)
+  {
     uBit.io.pin[pinIndex].setServoValue(angle, range);
-  } else {  
+  }
+  else
+  {
     uBit.io.pin[pinIndex].setServoValue(angle, range, center);
   }
 }
@@ -367,6 +372,12 @@ void ScratchMoreService::composeTxBuffer01()
 void ScratchMoreService::composeTxBuffer02()
 {
   composeDefaultData(txBuffer02);
+
+  txBuffer02[18] = 0;
+  for (size_t i = 0; i < 8; i++)
+  {
+    txBuffer02[18] = txBuffer02[18] | (uint8_t)(((digitalValues >> gpio[i]) & 1) << i);
+  }
 
   // More extension format.
   txBuffer02[19] = 0x02;
