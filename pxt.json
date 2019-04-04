@@ -10,6 +10,7 @@
         "README.md",
         "enums.d.ts",
         "shims.d.ts",
+        "extension.ts",
         "extension.cpp",
         "ScratchMoreService.h",
         "ScratchMoreService.cpp"

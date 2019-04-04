@@ -3,20 +3,20 @@
 
 #define NOTIFY_PERIOD 100
 
+enum Slot {
+    //% block="slot0"
+    SLOT0 = 0,
+    //% block="slot1"
+    SLOT1 = 1,
+    //% block="slot2"
+    SLOT2 = 2,
+    //% block="slot3"
+    SLOT3 = 3,
+};
+
 namespace ScratchMore {
     ScratchMoreService* _pService = NULL;
     Action _handler;
-
-    enum Slot {
-      //% block="slot0"
-      SLOT0 = 0,
-      //% block="slot1"
-      SLOT1 = 1,
-      //% block="slot2"
-      SLOT2 = 2,
-      //% block="slot3"
-      SLOT3 = 3,
-    };
 
     void notifyScratch() {
         while (NULL != _pService) {
@@ -33,7 +33,7 @@ namespace ScratchMore {
     * Starts a Scratch extension service.
     * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
     */
-    //% blockId=scratchmore_startScratchMoreService block="Scratch More service"
+   //%
     void startScratchMoreService(Action handler) {
         if (NULL != _pService) return;
 
@@ -46,7 +46,7 @@ namespace ScratchMore {
     /**
     * Sets the current temperature value on the external temperature sensor
     */
-    //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
+   //%
     void setScratchMoreSlot(Slot slot, int value) {
         if (NULL == _pService) return;
 
