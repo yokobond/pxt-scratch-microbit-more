@@ -111,12 +111,11 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
   {
     if (data[0] == ScratchBLECommand::CMD_DISPLAY_TEXT)
     {
-      ManagedString text;
-      for (int i = 1; i < params->len; i++)
-      {
-        text = text + ManagedString(char(data[i]));
-      }
-      uBit.display.scroll(text, 120); // Interval is corresponding with the Scratch extension.
+      char text[params->len];
+      memcpy(text, &(data[1]), (params->len) - 1);
+      text[(params->len) -1] = '\0';
+      ManagedString mstr(text);
+      uBit.display.scroll(mstr, 120); // Interval is corresponding with the Scratch extension.
     }
     else if (data[0] == ScratchBLECommand::CMD_DISPLAY_LED)
     {
