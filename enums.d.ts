@@ -11,6 +11,8 @@
     //% block="slot3"
     SLOT3 = 3,
     }
+declare namespace ScratchMore {
+}
 
 
     /**

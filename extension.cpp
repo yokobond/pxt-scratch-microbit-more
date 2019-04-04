@@ -14,6 +14,7 @@ enum Slot {
     SLOT3 = 3,
 };
 
+//% color=#FF9900 weight=95 icon="\uf1b0"
 namespace ScratchMore {
     ScratchMoreService* _pService = NULL;
     Action _handler;
@@ -33,7 +34,8 @@ namespace ScratchMore {
     * Starts a Scratch extension service.
     * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
     */
-   //%
+    //% blockId=scratchmore_startScratchMoreService block="Scratch More service"
+    //% shim=ScratchMore::startScratchMoreService
     void startScratchMoreService(Action handler) {
         if (NULL != _pService) return;
 
@@ -46,7 +48,8 @@ namespace ScratchMore {
     /**
     * Sets the current temperature value on the external temperature sensor
     */
-   //%
+    //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
+    //% shim=ScratchMore::setScratchMoreSlot
     void setScratchMoreSlot(Slot slot, int value) {
         if (NULL == _pService) return;
 
