@@ -6,7 +6,7 @@ Enhanced Scratch3 micro:bit extension. (beta)
 
 This program is working with [yokobond/scratch-ext at microbit-more](https://github.com/yokobond/scratch-ext/tree/microbit-more)
 
-1. Download sample script [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/04170-42854-15823-83604) on micro:bit
+1. Download sample script [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/_e4tW2qeoYTew) on micro:bit
 2. Open [Scratch microbit-more GUI](https://yokobond.github.io/scratch-ext/microbit-more/) or desktop application for Mac/Windows [Release microbit-more-v0.0.1 · yokobond/scratch-ext](https://github.com/yokobond/scratch-ext/releases/tag/microbit-more-v0.0.1). 
 3. Select extension 'micro:bit' on the Scratch.
 
@@ -16,7 +16,7 @@ This program is working with [yokobond/scratch-ext at microbit-more](https://git
 
 pxt-scratch-more can send any data (int16 x 4) to Scratch3 via data stream named 'slot'. 
 
-Open  [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/04170-42854-15823-83604) and set block 'Scratch More at slot(0-3) put [data]' into the mouth of a block 'Scratch More service'.
+Open  [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/_e4tW2qeoYTew) and 'Edit' to set block 'Scratch More at slot(0-3) put [data]' into the mouth of a block 'Scratch More service'.
 
 
 
