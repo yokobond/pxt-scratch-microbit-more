@@ -264,6 +264,7 @@ void ScratchMoreService::updateAnalogValues()
   {
     if (uBit.io.pin[analogIn[i]].isInput())
     {
+      uBit.io.pin[analogIn[i]].setPull(PullNone);
       analogValues[i] = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
     }
   }
