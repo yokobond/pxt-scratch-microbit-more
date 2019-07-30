@@ -359,6 +359,29 @@ void ScratchMoreService::composeTxBuffer02()
   txBuffer02[19] = 0x02;
 }
 
+void ScratchMoreService::composeTxBuffer03()
+{
+  composeDefaultData(txBuffer03);
+
+  // Magnetic field strength [nano teslas] is sent as uint16_t little-endian in 03:10.
+  uint16_t magStrength = (uint16_t)(uBit.compass.getFieldStrength() / 1000);
+  memcpy(&(txBuffer03[10]), &magStrength, 2);
+
+  int16_t acc;
+  // Acceleration X [milli-g] is sent as int16_t little-endian in 03:12.
+  acc = (int16_t)(uBit.accelerometer.getX());
+  memcpy(&(txBuffer03[12]), &acc, 2);
+  // Acceleration Y [milli-g] is sent as int16_t little-endian in 03:14.
+  acc = (int16_t)(uBit.accelerometer.getY());
+  memcpy(&(txBuffer03[14]), &acc, 2);
+  // Acceleration Z [milli-g] is sent as int16_t little-endian in 03:16.
+  acc = (int16_t)(uBit.accelerometer.getZ());
+  memcpy(&(txBuffer03[16]), &acc, 2);
+
+  // More extension format.
+  txBuffer03[19] = 0x03;
+}
+
 /**
   * Notify data to Scratch3
   */
@@ -379,6 +402,11 @@ void ScratchMoreService::notify(MicroBitEvent)
         txCharacteristicHandle,
         (uint8_t *)&txBuffer02,
         sizeof(txBuffer02) / sizeof(txBuffer02[0]));
+    composeTxBuffer03();
+    uBit.ble->gattServer().notify(
+        txCharacteristicHandle,
+        (uint8_t *)&txBuffer03,
+        sizeof(txBuffer03) / sizeof(txBuffer03[0]));
     resetGesture();
   }
 }

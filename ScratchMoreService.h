@@ -49,14 +49,19 @@ private:
   uint8_t txData[20];
 
   /**
-   * Sending data buffer A.
+   * Sending data buffer 01.
    */
   uint8_t txBuffer01[20];
 
   /**
-   * Sending data buffer B.
+   * Sending data buffer 02.
    */
   uint8_t txBuffer02[20];
+
+  /**
+   * Sending data buffer 03.
+   */
+  uint8_t txBuffer03[20];
 
   // Recieving buffer from Scratch3.
   uint8_t rxBuffer[20];
@@ -103,6 +108,7 @@ private:
   void composeDefaultData(uint8_t *buff);
   void composeTxBuffer01(void);
   void composeTxBuffer02(void);
+  void composeTxBuffer03(void);
 
   // microbit runtime instance
   MicroBit &uBit;
