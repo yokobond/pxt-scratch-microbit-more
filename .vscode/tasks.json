@@ -25,6 +25,14 @@
       ]
     },
     {
+      "taskName": "test",
+      "isTestCommand": true,
+      "problemMatcher": "$tsc",
+      "args": [
+        ""
+      ]
+    },
+    {
       "taskName": "clean",
       "isTestCommand": true,
       "problemMatcher": "$tsc",
