@@ -1,7 +1,6 @@
 // tests go here; this will not be compiled when this package is used as a library
 
 ScratchMore.startScratchMoreService(() => {
-  led.toggle(0,0);
   ScratchMore.setScratchMoreSlot(Slot.SLOT0, input.magneticForce(Dimension.Strength));
   ScratchMore.setScratchMoreSlot(Slot.SLOT1, input.acceleration(Dimension.X))
   ScratchMore.setScratchMoreSlot(Slot.SLOT2, input.acceleration(Dimension.Y))

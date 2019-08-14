@@ -74,6 +74,8 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
   }
 
   uBit.ble->onDataWritten(this, &ScratchMoreService::onDataWritten);
+
+  uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, this, &ScratchMoreService::onBLEConnected, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
 /**
@@ -409,6 +411,10 @@ void ScratchMoreService::notify(MicroBitEvent)
         sizeof(txBuffer03) / sizeof(txBuffer03[0]));
     resetGesture();
   }
+  else
+  {
+    displayFriendlyName();
+  }
 }
 
 /**
@@ -420,6 +426,17 @@ void ScratchMoreService::setSlot(int slot, int value)
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t slotData = (int16_t)value;
   memcpy(&(txBuffer02[10 + (slot * 2)]), &slotData, 2);
+}
+
+void ScratchMoreService::onBLEConnected(MicroBitEvent e)
+{
+  uBit.display.stopAnimation(); // To stop display friendly name.
+}
+
+void ScratchMoreService::displayFriendlyName()
+{
+  ManagedString suffix(" MORE! ");
+  uBit.display.scrollAsync(uBit.getName() + suffix, 120);
 }
 
 const uint16_t ScratchMoreServiceUUID = 0xf005;

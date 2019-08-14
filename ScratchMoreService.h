@@ -41,6 +41,11 @@ public:
     */
   void onDataWritten(const GattWriteCallbackParams *params);
 
+  /**
+   * Invocked when the bluetooth connected.
+   */
+  void onBLEConnected(MicroBitEvent e);
+
   void updateDigitalValues();
   void updateAnalogValues();
 
@@ -109,6 +114,8 @@ private:
   void composeTxBuffer01(void);
   void composeTxBuffer02(void);
   void composeTxBuffer03(void);
+
+  void displayFriendlyName();
 
   // microbit runtime instance
   MicroBit &uBit;
