@@ -1,5 +1,8 @@
 {
   "files.autoSave": "onFocusChange",
+  "files.exclude": {
+    "**/.history": true
+  },
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.history/**": true,
