@@ -134,6 +134,13 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(&center, &(data[6]), 2);
       setServoValue((int)data[1], (int)angle, (int)range, (int)center);
     }
+    else if (data[0] == ScratchBLECommand::CMD_SLOT_VALUE)
+    {
+      // slotValue is read as int16_t little-endian.
+      int16_t slotValue;
+      memcpy(&slotValue, &(data[2]), 2);
+      slots[data[1]] = slotValue;
+    }
   }
 }
 
@@ -421,11 +428,21 @@ void ScratchMoreService::notify(MicroBitEvent)
  * Set value to Slots.
  * slot (0, 1, 2, 3)
  */
-void ScratchMoreService::setSlot(int slot, int value)
+void ScratchMoreService::setSlot(int slotIndex, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t slotData = (int16_t)value;
-  memcpy(&(txBuffer02[10 + (slot * 2)]), &slotData, 2);
+  memcpy(&(txBuffer02[10 + (slotIndex * 2)]), &slotData, 2);
+  slots[slotIndex] = slotData;
+}
+
+/**
+ * Get value of a Slot.
+ * slot (0, 1, 2, 3)
+ */
+int ScratchMoreService::getSlot(int slotIndex)
+{
+  return (int)(slots[slotIndex]);
 }
 
 void ScratchMoreService::onBLEConnected(MicroBitEvent e)

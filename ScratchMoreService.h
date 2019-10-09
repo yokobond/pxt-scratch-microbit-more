@@ -37,6 +37,11 @@ public:
   void setSlot(int slot, int value);
 
   /**
+   * Get value to Slots.
+   */
+  int getSlot(int slot);
+
+  /**
     * Callback. Invoked when any of our attributes are written via BLE.
     */
   void onDataWritten(const GattWriteCallbackParams *params);
@@ -96,6 +101,11 @@ private:
 
   uint16_t analogValues[6];
 
+  /**
+   * Slots
+   */
+  int16_t slots[4];
+
   void setInputMode(int pinIndex);
   void setDigitalValue(int pinIndex, int value);
   void setAnalogValue(int pinIndex, int value);
@@ -132,7 +142,8 @@ private:
     CMD_PIN_INPUT = 0x90,
     CMD_PIN_OUTPUT = 0x91,
     CMD_PIN_PWM = 0x92,
-    CMD_PIN_SERVO = 0x93
+    CMD_PIN_SERVO = 0x93,
+    CMD_SLOT_VALUE = 0xA0
   };
 };
 

@@ -46,7 +46,7 @@ namespace ScratchMore {
     }
 
     /**
-    * Sets the current temperature value on the external temperature sensor
+    * Set slot value.
     */
     //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
     //% shim=ScratchMore::setScratchMoreSlot
@@ -55,4 +55,15 @@ namespace ScratchMore {
 
         _pService->setSlot((int)slot, value);
     }
+
+    /**
+     * Get slot value. 
+     */
+    //% blockId=scratchmore_getScratchMoreSlot block="Scratch More at %slot"
+    //% shim=ScratchMore::getScratchMoreSlot
+    int getScratchMoreSlot(Slot slot) {
+        if (NULL == _pService) return 0;
+
+        return _pService->getSlot((int)slot);
+    }    
 }

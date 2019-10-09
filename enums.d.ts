@@ -16,7 +16,7 @@ declare namespace ScratchMore {
 
 
     /**
-     * Heading angle of compass.
+     * Slots
      */
 
     declare const enum ScratchBLECommand
@@ -28,6 +28,7 @@ declare namespace ScratchMore {
     CMD_PIN_OUTPUT = 0x91,
     CMD_PIN_PWM = 0x92,
     CMD_PIN_SERVO = 0x93,
+    CMD_SLOT_VALUE = 0xA0,
     }
 
 // Auto-generated. Do not edit. Really.

@@ -14,11 +14,18 @@ declare namespace ScratchMore {
     function startScratchMoreService(handler: () => void): void;
 
     /**
-     * Sets the current temperature value on the external temperature sensor
+     * Set slot value.
      */
     //% blockId=scratchmore_setScratchMoreSlot block="Scratch More at %slot put %value"
     //% shim=ScratchMore::setScratchMoreSlot shim=ScratchMore::setScratchMoreSlot
     function setScratchMoreSlot(slot: Slot, value: int32): void;
+
+    /**
+     * Get slot value. 
+     */
+    //% blockId=scratchmore_getScratchMoreSlot block="Scratch More at %slot"
+    //% shim=ScratchMore::getScratchMoreSlot shim=ScratchMore::getScratchMoreSlot
+    function getScratchMoreSlot(slot: Slot): int32;
 }
 
 // Auto-generated. Do not edit. Really.
