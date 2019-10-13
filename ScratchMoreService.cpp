@@ -144,7 +144,7 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
       // slotValue is read as int16_t little-endian.
       int16_t slotValue;
       memcpy(&slotValue, &(data[2]), 2);
-      slots[data[1]] = slotValue;
+      setSlot(data[1], slotValue);
     }
   }
 }
