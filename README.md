@@ -16,7 +16,7 @@ This program is working with [yokobond/scratch-ext at microbit-more](https://git
 
 pxt-scratch-more can send any data (int16 x 4) to Scratch3 via data stream named 'slot'. 
 
-Open  [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/_e4tW2qeoYTew) and 'Edit' to set block 'Scratch More at slot(0-3) put [data]' into the mouth of a block 'Scratch More service'.
+Open  [Scratch-microbit-more - Microsoft MakeCode](https://makecode.microbit.org/_5PbJm5EFCUAq) and 'Edit' to set block 'Scratch More at slot(0-3) put [data]' into the mouth of a block 'Scratch More service'.
 
 
 
