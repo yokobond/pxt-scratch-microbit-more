@@ -69,7 +69,7 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
   const uint16_t uuid16_list[] = {ScratchMoreServiceUUID};
   uBit.ble->accumulateAdvertisingPayload(GapAdvertisingData::INCOMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
 
-  // Setup callbacks for button events.
+  // Setup callbacks for events.
   if (EventModel::defaultEventBus)
   {
     EventModel::defaultEventBus->listen(SCRATCH_MORE_ID, SCRATCH_MORE_EVT_NOTIFY, this, &ScratchMoreService::notify, MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -377,7 +377,7 @@ void ScratchMoreService::composeTxBuffer03()
 {
   composeDefaultData(txBuffer03);
 
-  // Magnetic field strength [nano teslas] is sent as uint16_t little-endian in 03:10.
+  // Magnetic field strength [micro teslas] is sent as uint16_t little-endian in 03:10.
   uint16_t magStrength = (uint16_t)(uBit.compass.getFieldStrength() / 1000);
   memcpy(&(txBuffer03[10]), &magStrength, 2);
 
