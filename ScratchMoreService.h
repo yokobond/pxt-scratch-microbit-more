@@ -55,6 +55,10 @@ public:
   void updateAnalogValues();
 
 private:
+
+  // Data format [1,2,3] to send.
+  uint8_t txDataFormat;
+
   // Sending data to Scratch3.
   uint8_t txData[20];
 

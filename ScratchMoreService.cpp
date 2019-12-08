@@ -323,6 +323,9 @@ void ScratchMoreService::setServoValue(int pinIndex, int angle, int range, int c
 
 void ScratchMoreService::composeDefaultData(uint8_t *buff)
 {
+  updateDigitalValues();
+  updateGesture();
+
   // Tilt value is sent as int16_t big-endian.
   int16_t tiltX = (int16_t)convertToTilt(uBit.accelerometer.getRollRadians());
   buff[0] = (tiltX >> 8) & 0xFF;
@@ -341,6 +344,8 @@ void ScratchMoreService::composeDefaultData(uint8_t *buff)
 void ScratchMoreService::composeTxBuffer01()
 {
   composeDefaultData(txBuffer01);
+
+  updateAnalogValues();
 
   // analog value (0 to 1024) is sent as uint16_t little-endian.
   memcpy(&(txBuffer01[10]), &(analogValues[0]), 2);
@@ -402,28 +407,43 @@ void ScratchMoreService::notify()
 {
   if (uBit.ble->gap().getState().connected)
   {
-    updateDigitalValues();
-    updateAnalogValues();
-    updateGesture();
-    composeTxBuffer01();
-    uBit.ble->gattServer().notify(
-        txCharacteristicHandle,
-        (uint8_t *)&txBuffer01,
-        sizeof(txBuffer01) / sizeof(txBuffer01[0]));
-    composeTxBuffer02();
-    uBit.ble->gattServer().notify(
-        txCharacteristicHandle,
-        (uint8_t *)&txBuffer02,
-        sizeof(txBuffer02) / sizeof(txBuffer02[0]));
-    composeTxBuffer03();
-    uBit.ble->gattServer().notify(
-        txCharacteristicHandle,
-        (uint8_t *)&txBuffer03,
-        sizeof(txBuffer03) / sizeof(txBuffer03[0]));
+    switch (txDataFormat)
+    {
+    case 1:
+      composeTxBuffer01();
+      uBit.ble->gattServer().notify(
+          txCharacteristicHandle,
+          (uint8_t *)&txBuffer01,
+          sizeof(txBuffer01) / sizeof(txBuffer01[0]));
+      break;
+
+    case 2:
+      composeTxBuffer02();
+      uBit.ble->gattServer().notify(
+          txCharacteristicHandle,
+          (uint8_t *)&txBuffer02,
+          sizeof(txBuffer02) / sizeof(txBuffer02[0]));
+      break;
+
+    case 3:
+      composeTxBuffer03();
+      uBit.ble->gattServer().notify(
+          txCharacteristicHandle,
+          (uint8_t *)&txBuffer03,
+          sizeof(txBuffer03) / sizeof(txBuffer03[0]));
+      break;
+
+    default:
+      break;
+    }
     resetGesture();
+    txDataFormat++;
+    if (txDataFormat > 3)
+      txDataFormat = 1;
   }
   else
   {
+    txDataFormat = 1;
     displayFriendlyName();
   }
 }
