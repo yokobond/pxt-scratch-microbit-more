@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "ScratchMoreService.h"
 
-#define NOTIFY_PERIOD 100
+#define NOTIFY_PERIOD 10
 
 enum Slot {
     //% block="slot0"
