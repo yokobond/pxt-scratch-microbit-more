@@ -72,7 +72,6 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
   // Setup callbacks for events.
   if (EventModel::defaultEventBus)
   {
-    EventModel::defaultEventBus->listen(SCRATCH_MORE_ID, SCRATCH_MORE_EVT_NOTIFY, this, &ScratchMoreService::notify, MESSAGE_BUS_LISTENER_IMMEDIATE);
     EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, this, &ScratchMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
     EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, this, &ScratchMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
     EventModel::defaultEventBus->listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, this, &ScratchMoreService::onAccelerometerChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -399,7 +398,7 @@ void ScratchMoreService::composeTxBuffer03()
 /**
   * Notify data to Scratch3
   */
-void ScratchMoreService::notify(MicroBitEvent)
+void ScratchMoreService::notify()
 {
   if (uBit.ble->gap().getState().connected)
   {
