@@ -29,7 +29,7 @@ public:
   /**
     * Notify data to Scratch3.
     */
-  void notify(MicroBitEvent);
+  void notify();
 
   /**
    * Set value to Slots.

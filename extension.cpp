@@ -21,10 +21,10 @@ namespace ScratchMore {
 
     void notifyScratch() {
         while (NULL != _pService) {
-            // run action that updates Scratch data
+            // run actions in the loop
             pxt::runAction0(_handler);
-            // raise event to trigger notification
-            MicroBitEvent ev(SCRATCH_MORE_ID, SCRATCH_MORE_EVT_NOTIFY);
+            // notyfy data to Scratch
+            _pService->notify();
             // wait period
             fiber_sleep(NOTIFY_PERIOD);
         }
