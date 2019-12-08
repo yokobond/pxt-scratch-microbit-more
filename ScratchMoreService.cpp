@@ -67,7 +67,7 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
 
   // Advertise this service.
   const uint16_t uuid16_list[] = {ScratchMoreServiceUUID};
-  uBit.ble->accumulateAdvertisingPayload(GapAdvertisingData::INCOMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
+  uBit.ble->gap().accumulateAdvertisingPayload(GapAdvertisingData::INCOMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
 
   // Setup callbacks for events.
   if (EventModel::defaultEventBus)
@@ -401,7 +401,7 @@ void ScratchMoreService::composeTxBuffer03()
   */
 void ScratchMoreService::notify(MicroBitEvent)
 {
-  if (uBit.ble->getGapState().connected)
+  if (uBit.ble->gap().getState().connected)
   {
     updateDigitalValues();
     updateAnalogValues();
