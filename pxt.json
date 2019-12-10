@@ -37,9 +37,6 @@
                 },
                 "gatt_table_size": "0x300"
             }
-        },
-        "dependencies": {
-            "microbit": "yokobond/microbit#mbit-more"
-          }
+        }
     }
 }
