@@ -2,17 +2,17 @@
   * Class definition for the Scratch MicroBit More Service.
   * Provides a BLE service to remotely controll Micro:bit from Scratch3.
   */
-#include "ScratchMoreService.h"
+#include "MbitMoreService.h"
 
 int gpio[] = {0, 1, 2, 8, 13, 14, 15, 16};
 int analogIn[] = {0, 1, 2};
 
 /**
   * Constructor.
-  * Create a representation of the ScratchMoreService
+  * Create a representation of the MbitMoreService
   * @param _uBit The instance of a MicroBit runtime.
   */
-ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
+MbitMoreService::MbitMoreService(MicroBit &_uBit)
     : uBit(_uBit)
 {
   // Calibrate the compass before start bluetooth service. 
@@ -32,14 +32,14 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
 
   // Create the data structures that represent each of our characteristics in Soft Device.
   GattCharacteristic txCharacteristic(
-      ScratchMoreServiceTxUUID,
+      MbitMoreServiceTxUUID,
       (uint8_t *)&txData,
       0,
       sizeof(txData),
       GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
   GattCharacteristic rxCharacteristic(
-      ScratchMoreServiceRxUUID,
+      MbitMoreServiceRxUUID,
       (uint8_t *)&rxBuffer,
       0,
       sizeof(rxBuffer),
@@ -51,7 +51,7 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
 
   GattCharacteristic *characteristics[] = {&txCharacteristic, &rxCharacteristic};
   GattService service(
-      ScratchMoreServiceUUID, characteristics,
+      MbitMoreServiceUUID, characteristics,
       sizeof(characteristics) / sizeof(GattCharacteristic *));
 
   uBit.ble->addService(service);
@@ -66,26 +66,26 @@ ScratchMoreService::ScratchMoreService(MicroBit &_uBit)
       sizeof(txData));
 
   // Advertise this service.
-  const uint16_t uuid16_list[] = {ScratchMoreServiceUUID};
+  const uint16_t uuid16_list[] = {MbitMoreServiceUUID};
   uBit.ble->gap().accumulateAdvertisingPayload(GapAdvertisingData::INCOMPLETE_LIST_16BIT_SERVICE_IDS, (uint8_t *)uuid16_list, sizeof(uuid16_list));
 
   // Setup callbacks for events.
   if (EventModel::defaultEventBus)
   {
-    EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, this, &ScratchMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
-    EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, this, &ScratchMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
-    EventModel::defaultEventBus->listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, this, &ScratchMoreService::onAccelerometerChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    EventModel::defaultEventBus->listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
+    EventModel::defaultEventBus->listen(MICROBIT_ID_ACCELEROMETER, MICROBIT_ACCELEROMETER_EVT_DATA_UPDATE, this, &MbitMoreService::onAccelerometerChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
   }
 
-  uBit.ble->onDataWritten(this, &ScratchMoreService::onDataWritten);
+  uBit.ble->onDataWritten(this, &MbitMoreService::onDataWritten);
 
-  uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, this, &ScratchMoreService::onBLEConnected, MESSAGE_BUS_LISTENER_IMMEDIATE);
+  uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, this, &MbitMoreService::onBLEConnected, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
 /**
   * Callback. Invoked when any of our attributes are written via BLE.
   */
-void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
+void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
 {
   uint8_t *data = (uint8_t *)params->data;
 
@@ -151,7 +151,7 @@ void ScratchMoreService::onDataWritten(const GattWriteCallbackParams *params)
 /**
   * Button update callback
   */
-void ScratchMoreService::onButtonChanged(MicroBitEvent e)
+void MbitMoreService::onButtonChanged(MicroBitEvent e)
 {
   int state;
   if (e.value == MICROBIT_BUTTON_EVT_UP)
@@ -188,7 +188,7 @@ void ScratchMoreService::onButtonChanged(MicroBitEvent e)
   }
 }
 
-void ScratchMoreService::onAccelerometerChanged(MicroBitEvent)
+void MbitMoreService::onAccelerometerChanged(MicroBitEvent)
 {
   if (uBit.accelerometer.getGesture() == MICROBIT_ACCELEROMETER_EVT_SHAKE)
   {
@@ -203,7 +203,7 @@ void ScratchMoreService::onAccelerometerChanged(MicroBitEvent)
 /**
  * Normalize angle in upside down.
  */
-int ScratchMoreService::normalizeCompassHeading(int heading)
+int MbitMoreService::normalizeCompassHeading(int heading)
 {
   if (uBit.accelerometer.getZ() > 0)
   {
@@ -222,7 +222,7 @@ int ScratchMoreService::normalizeCompassHeading(int heading)
 /**
  * Convert roll/pitch radians to Scratch extension value (-1000 to 1000).
  */
-int ScratchMoreService::convertToTilt(float radians)
+int MbitMoreService::convertToTilt(float radians)
 {
   float degrees = (360.0f * radians) / (2.0f * PI);
   float tilt = degrees * 1.0f / 90.0f;
@@ -239,7 +239,7 @@ int ScratchMoreService::convertToTilt(float radians)
   return (int)(tilt * 1000.0f);
 }
 
-void ScratchMoreService::updateGesture()
+void MbitMoreService::updateGesture()
 {
   int old[] = {lastAcc[0], lastAcc[1], lastAcc[2]};
   lastAcc[0] = uBit.accelerometer.getX();
@@ -253,12 +253,12 @@ void ScratchMoreService::updateGesture()
   }
 }
 
-void ScratchMoreService::resetGesture()
+void MbitMoreService::resetGesture()
 {
   gesture = 0;
 }
 
-void ScratchMoreService::updateDigitalValues()
+void MbitMoreService::updateDigitalValues()
 {
   digitalValues = 0;
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
@@ -271,7 +271,7 @@ void ScratchMoreService::updateDigitalValues()
   }
 }
 
-void ScratchMoreService::updateAnalogValues()
+void MbitMoreService::updateAnalogValues()
 {
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
@@ -290,22 +290,22 @@ void ScratchMoreService::updateAnalogValues()
   // uBit.display.enable();
 }
 
-void ScratchMoreService::setInputMode(int pinIndex)
+void MbitMoreService::setInputMode(int pinIndex)
 {
   uBit.io.pin[pinIndex].getDigitalValue(); // Configure the pin as input, but the value is not used.
 }
 
-void ScratchMoreService::setDigitalValue(int pinIndex, int value)
+void MbitMoreService::setDigitalValue(int pinIndex, int value)
 {
   uBit.io.pin[pinIndex].setDigitalValue(value);
 }
 
-void ScratchMoreService::setAnalogValue(int pinIndex, int value)
+void MbitMoreService::setAnalogValue(int pinIndex, int value)
 {
   uBit.io.pin[pinIndex].setAnalogValue(value);
 }
 
-void ScratchMoreService::setServoValue(int pinIndex, int angle, int range, int center)
+void MbitMoreService::setServoValue(int pinIndex, int angle, int range, int center)
 {
   if (range == 0)
   {
@@ -321,7 +321,7 @@ void ScratchMoreService::setServoValue(int pinIndex, int angle, int range, int c
   }
 }
 
-void ScratchMoreService::composeDefaultData(uint8_t *buff)
+void MbitMoreService::composeDefaultData(uint8_t *buff)
 {
   updateDigitalValues();
   updateGesture();
@@ -341,7 +341,7 @@ void ScratchMoreService::composeDefaultData(uint8_t *buff)
   buff[9] = (uint8_t)gesture;
 }
 
-void ScratchMoreService::composeTxBuffer01()
+void MbitMoreService::composeTxBuffer01()
 {
   composeDefaultData(txBuffer01);
 
@@ -363,7 +363,7 @@ void ScratchMoreService::composeTxBuffer01()
   txBuffer01[19] = 0x01;
 }
 
-void ScratchMoreService::composeTxBuffer02()
+void MbitMoreService::composeTxBuffer02()
 {
   composeDefaultData(txBuffer02);
 
@@ -377,7 +377,7 @@ void ScratchMoreService::composeTxBuffer02()
   txBuffer02[19] = 0x02;
 }
 
-void ScratchMoreService::composeTxBuffer03()
+void MbitMoreService::composeTxBuffer03()
 {
   composeDefaultData(txBuffer03);
 
@@ -403,7 +403,7 @@ void ScratchMoreService::composeTxBuffer03()
 /**
   * Notify data to Scratch3
   */
-void ScratchMoreService::notify()
+void MbitMoreService::notify()
 {
   if (uBit.ble->gap().getState().connected)
   {
@@ -452,7 +452,7 @@ void ScratchMoreService::notify()
  * Set value to Slots.
  * slot (0, 1, 2, 3)
  */
-void ScratchMoreService::setSlot(int slotIndex, int value)
+void MbitMoreService::setSlot(int slotIndex, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t slotData = (int16_t)value;
@@ -464,26 +464,26 @@ void ScratchMoreService::setSlot(int slotIndex, int value)
  * Get value of a Slot.
  * slot (0, 1, 2, 3)
  */
-int ScratchMoreService::getSlot(int slotIndex)
+int MbitMoreService::getSlot(int slotIndex)
 {
   return (int)(slots[slotIndex]);
 }
 
-void ScratchMoreService::onBLEConnected(MicroBitEvent e)
+void MbitMoreService::onBLEConnected(MicroBitEvent e)
 {
   uBit.display.stopAnimation(); // To stop display friendly name.
 }
 
-void ScratchMoreService::displayFriendlyName()
+void MbitMoreService::displayFriendlyName()
 {
   ManagedString suffix(" MORE! ");
   uBit.display.scrollAsync(uBit.getName() + suffix, 120);
 }
 
-const uint16_t ScratchMoreServiceUUID = 0xf005;
+const uint16_t MbitMoreServiceUUID = 0xf005;
 
-const uint8_t ScratchMoreServiceTxUUID[] = {
+const uint8_t MbitMoreServiceTxUUID[] = {
     0x52, 0x61, 0xda, 0x01, 0xfa, 0x7e, 0x42, 0xab, 0x85, 0x0b, 0x7c, 0x80, 0x22, 0x00, 0x97, 0xcc};
 
-const uint8_t ScratchMoreServiceRxUUID[] = {
+const uint8_t MbitMoreServiceRxUUID[] = {
     0x52, 0x61, 0xda, 0x02, 0xfa, 0x7e, 0x42, 0xab, 0x85, 0x0b, 0x7c, 0x80, 0x22, 0x00, 0x97, 0xcc};

@@ -1,5 +1,5 @@
 {
-    "name": "pxt-scratch-more",
+    "name": "pxt-mbit-more",
     "version": "0.3.2",
     "description": "",
     "dependencies": {
@@ -12,8 +12,8 @@
         "shims.d.ts",
         "extension.ts",
         "extension.cpp",
-        "ScratchMoreService.h",
-        "ScratchMoreService.cpp"
+        "MbitMoreService.h",
+        "MbitMoreService.cpp"
     ],
     "testFiles": [
         "test.ts"

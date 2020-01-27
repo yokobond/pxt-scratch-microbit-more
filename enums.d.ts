@@ -1,20 +1,6 @@
 // Auto-generated. Do not edit.
 
 
-    declare const enum Slot {
-    //% block="slot0"
-    SLOT0 = 0,
-    //% block="slot1"
-    SLOT1 = 1,
-    //% block="slot2"
-    SLOT2 = 2,
-    //% block="slot3"
-    SLOT3 = 3,
-    }
-declare namespace ScratchMore {
-}
-
-
     /**
      * Slots
      */
@@ -30,5 +16,19 @@ declare namespace ScratchMore {
     CMD_PIN_SERVO = 0x93,
     CMD_SLOT_VALUE = 0xA0,
     }
+
+
+    declare const enum Slot {
+    //% block="slot0"
+    SLOT0 = 0,
+    //% block="slot1"
+    SLOT1 = 1,
+    //% block="slot2"
+    SLOT2 = 2,
+    //% block="slot3"
+    SLOT3 = 3,
+    }
+declare namespace MbitMore {
+}
 
 // Auto-generated. Do not edit. Really.

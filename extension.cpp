@@ -1,5 +1,5 @@
 #include "pxt.h"
-#include "ScratchMoreService.h"
+#include "MbitMoreService.h"
 
 #define NOTIFY_PERIOD 10
 
@@ -15,8 +15,8 @@ enum Slot {
 };
 
 //% color=#FF9900 weight=95 icon="\uf1b0"
-namespace ScratchMore {
-    ScratchMoreService* _pService = NULL;
+namespace MbitMore {
+    MbitMoreService* _pService = NULL;
     Action _handler;
 
     void notifyScratch() {
@@ -32,13 +32,13 @@ namespace ScratchMore {
 
     /**
     * Starts a Scratch extension service.
-    * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
+    * The handler can call ``setMbitMoreSlot`` to send any data to Scratch.
     */
     //%
-    void startScratchMoreService(Action handler) {
+    void startMbitMoreService(Action handler) {
         if (NULL != _pService) return;
 
-        _pService = new ScratchMoreService(uBit);
+        _pService = new MbitMoreService(uBit);
         _handler = handler;
         pxt::incr(_handler);
         create_fiber(notifyScratch);
@@ -48,7 +48,7 @@ namespace ScratchMore {
     * Set slot value.
     */
     //%
-    void setScratchMoreSlot(Slot slot, int value) {
+    void setMbitMoreSlot(Slot slot, int value) {
         if (NULL == _pService) return;
 
         _pService->setSlot((int)slot, value);
@@ -58,7 +58,7 @@ namespace ScratchMore {
      * Get slot value. 
      */
     //%
-    int getScratchMoreSlot(Slot slot) {
+    int getMbitMoreSlot(Slot slot) {
         if (NULL == _pService) return 0;
 
         return _pService->getSlot((int)slot);

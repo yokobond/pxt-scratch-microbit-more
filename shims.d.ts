@@ -3,26 +3,26 @@
 
 
     //% color=#FF9900 weight=95 icon="\uf1b0"
-declare namespace ScratchMore {
+declare namespace MbitMore {
 
     /**
      * Starts a Scratch extension service.
-     * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
+     * The handler can call ``setMbitMoreSlot`` to send any data to Scratch.
      */
-    //% shim=ScratchMore::startScratchMoreService
-    function startScratchMoreService(handler: () => void): void;
+    //% shim=MbitMore::startMbitMoreService
+    function startMbitMoreService(handler: () => void): void;
 
     /**
      * Set slot value.
      */
-    //% shim=ScratchMore::setScratchMoreSlot
-    function setScratchMoreSlot(slot: Slot, value: int32): void;
+    //% shim=MbitMore::setMbitMoreSlot
+    function setMbitMoreSlot(slot: Slot, value: int32): void;
 
     /**
      * Get slot value. 
      */
-    //% shim=ScratchMore::getScratchMoreSlot
-    function getScratchMoreSlot(slot: Slot): int32;
+    //% shim=MbitMore::getMbitMoreSlot
+    function getMbitMoreSlot(slot: Slot): int32;
 }
 
 // Auto-generated. Do not edit. Really.

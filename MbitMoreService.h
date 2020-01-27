@@ -8,23 +8,23 @@
 #define SCRATCH_MORE_EVT_NOTIFY 1
 
 // UUIDs for our service and characteristics
-extern const uint16_t ScratchMoreServiceUUID;
-extern const uint8_t ScratchMoreServiceTxUUID[];
-extern const uint8_t ScratchMoreServiceRxUUID[];
+extern const uint16_t MbitMoreServiceUUID;
+extern const uint8_t MbitMoreServiceTxUUID[];
+extern const uint8_t MbitMoreServiceRxUUID[];
 
 /**
   * Class definition for a MicroBitMore Service.
   * Provides a BLE service to remotely read the state of sensors from Scratch3.
   */
-class ScratchMoreService
+class MbitMoreService
 {
 public:
   /**
     * Constructor.
-    * Create a representation of the ScratchMoreService
+    * Create a representation of the MbitMoreService
     * @param _uBit The instance of a MicroBit runtime.
     */
-  ScratchMoreService(MicroBit &_uBit);
+  MbitMoreService(MicroBit &_uBit);
 
   /**
     * Notify data to Scratch3.

@@ -1,4 +1,4 @@
-# pxt-scratch-more
+# pxt-mbit-more
 
 Enhanced Scratch3 micro:bit extension. (beta)
  
