@@ -138,12 +138,12 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(&center, &(data[6]), 2);
       setServoValue((int)data[1], (int)angle, (int)range, (int)center);
     }
-    else if (data[0] == ScratchBLECommand::CMD_SLOT_VALUE)
+    else if (data[0] == ScratchBLECommand::CMD_SHARED_DATA_SET)
     {
-      // slotValue is read as int16_t little-endian.
-      int16_t slotValue;
-      memcpy(&slotValue, &(data[2]), 2);
-      setSlot(data[1], slotValue);
+      // value is read as int16_t little-endian.
+      int16_t value;
+      memcpy(&value, &(data[2]), 2);
+      setSharedData(data[1], value);
     }
   }
 }
@@ -449,27 +449,27 @@ void MbitMoreService::notify()
 }
 
 /**
- * Set value to Slots.
- * slot (0, 1, 2, 3)
+ * Set value to shared data.
+ * shared data (0, 1, 2, 3)
  */
-void MbitMoreService::setSlot(int slotIndex, int value)
+void MbitMoreService::setSharedData(int index, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
-  int16_t slotData = (int16_t)value;
-  memcpy(&(txBuffer02[10 + (slotIndex * 2)]), &slotData, 2);
-  slots[slotIndex] = slotData;
+  int16_t data = (int16_t)value;
+  memcpy(&(txBuffer02[10 + (index * 2)]), &data, 2);
+  sharedData[index] = data;
 }
 
 /**
- * Get value of a Slot.
- * slot (0, 1, 2, 3)
+ * Get value of a shared data.
+ * shared data (0, 1, 2, 3)
  */
-int MbitMoreService::getSlot(int slotIndex)
+int MbitMoreService::getSharedData(int index)
 {
-  return (int)(slots[slotIndex]);
+  return (int)(sharedData[index]);
 }
 
-void MbitMoreService::onBLEConnected(MicroBitEvent e)
+void MbitMoreService::onBLEConnected(MicroBitEvent _e)
 {
   uBit.display.stopAnimation(); // To stop display friendly name.
 }

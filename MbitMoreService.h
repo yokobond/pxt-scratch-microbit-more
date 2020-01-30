@@ -34,12 +34,12 @@ public:
   /**
    * Set value to Slots.
    */
-  void setSlot(int slot, int value);
+  void setSharedData(int index, int value);
 
   /**
    * Get value to Slots.
    */
-  int getSlot(int slot);
+  int getSharedData(int index);
 
   /**
     * Callback. Invoked when any of our attributes are written via BLE.
@@ -106,9 +106,9 @@ private:
   uint16_t analogValues[6];
 
   /**
-   * Slots
+   * Shared data
    */
-  int16_t slots[4];
+  int16_t sharedData[4];
 
   void setInputMode(int pinIndex);
   void setDigitalValue(int pinIndex, int value);
@@ -147,7 +147,7 @@ private:
     CMD_PIN_OUTPUT = 0x91,
     CMD_PIN_PWM = 0x92,
     CMD_PIN_SERVO = 0x93,
-    CMD_SLOT_VALUE = 0xA0
+    CMD_SHARED_DATA_SET = 0xA0
   };
 };
 

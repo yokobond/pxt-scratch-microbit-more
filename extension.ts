@@ -1,10 +1,10 @@
 
 namespace MbitMore {
-    let slots: number[] = [0, 0, 0, 0];
+    let sharedData: number[] = [0, 0, 0, 0];
 
     /**
     * Starts a Scratch extension service.
-    * The handler can call ``setscratchMoreSlot`` to send any data to Scratch.
+    * The handler can call ``setscratchMoreSharedData`` to send any data to Scratch.
     */
     //% blockId=scratchmore_startMbitMoreService block="Scratch More service"
     //% shim=MbitMore::startMbitMoreService
@@ -12,18 +12,23 @@ namespace MbitMore {
         console.log("Scratch More started");
     }
 
-    //% blockId=scratchmore_setMbitMoreSlot block="Scratch More at %slot put %value"
-    //% shim=MbitMore::setMbitMoreSlot
-    export function setSlot(slotIndex: Slot, slotValue: number):void {
-        slots[slotIndex] = slotValue;
+    /**
+     * Set value of the shared data.
+     * @param index - Index of shared data.
+     * @param value - New value of shared data.
+     */
+    //% blockId=scratchmore_setMbitMoreSharedData block="set shared %index to %value"
+    //% shim=MbitMore::setMbitMoreSharedData
+    export function setSharedData(index: SharedDataIndex, value: number):void {
+        sharedData[index] = value;
     }
 
     /**
-     * Get slot value. 
+     * Get value of the shared data.
      */
-    //% blockId=scratchmore_getMbitMoreSlot block="Scratch More at %slot"
-    //% shim=MbitMore::getMbitMoreSlot
-    export function getSlot(slotIndex: Slot):number {
-        return slots[slotIndex];
+    //% blockId=scratchmore_getMbitMoreSharedData block="value of shared %index"
+    //% shim=MbitMore::getMbitMoreSharedData
+    export function getSharedData(index: SharedDataIndex):number {
+        return sharedData[index];
     }
 }
