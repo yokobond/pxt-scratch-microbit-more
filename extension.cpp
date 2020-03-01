@@ -24,8 +24,17 @@ namespace MbitMore {
             // run actions in the loop
             pxt::runAction0(_handler);
             // notyfy data to Scratch
+            _pService->notifySharedData();
+            fiber_sleep(NOTIFY_PERIOD);
+            _pService->notifyLightSensor();
+            fiber_sleep(NOTIFY_PERIOD);
+            _pService->notifyIo();
+            fiber_sleep(NOTIFY_PERIOD);
+            _pService->notifyAccelerometer();
+            fiber_sleep(NOTIFY_PERIOD);
+            _pService->notifyMagnetometer();
+            fiber_sleep(NOTIFY_PERIOD);
             _pService->notify();
-            // wait period
             fiber_sleep(NOTIFY_PERIOD);
         }
     }

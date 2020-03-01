@@ -1,8 +1,22 @@
 // Auto-generated. Do not edit.
 
 
+    declare const enum SharedDataIndex {
+    //% block="data0"
+    DATA0 = 0,
+    //% block="data1"
+    DATA1 = 1,
+    //% block="data2"
+    DATA2 = 2,
+    //% block="data3"
+    DATA3 = 3,
+    }
+declare namespace MbitMore {
+}
+
+
     /**
-     * Shared data
+     * Protocol of microbit more.
      */
 
     declare const enum ScratchBLECommand
@@ -18,17 +32,17 @@
     }
 
 
-    declare const enum SharedDataIndex {
-    //% block="data0"
-    DATA0 = 0,
-    //% block="data1"
-    DATA1 = 1,
-    //% block="data2"
-    DATA2 = 2,
-    //% block="data3"
-    DATA3 = 3,
+    declare const enum MBitMoreDataFormat
+    {
+    MIX_01 = 0x01,
+    MIX_02 = 0x02,
+    MIX_03 = 0x03,
+    IO = 0x11,
+    ANSLOG_IN = 0x12,
+    LIGHT_SENSOR = 0x13,
+    ACCELEROMETER = 0x14,
+    MAGNETOMETER = 0x15,
+    SHARED_DATA = 0x16,
     }
-declare namespace MbitMore {
-}
 
 // Auto-generated. Do not edit. Really.
