@@ -476,6 +476,7 @@ void MbitMoreService::composeTxBuffer01()
 {
   composeDefaultData(txBuffer01);
 
+  updateAnalogValues();
   // analog value (0 to 1024) is sent as uint16_t little-endian.
   memcpy(&(txBuffer01[10]), &(analogValues[0]), 2);
   memcpy(&(txBuffer01[12]), &(analogValues[1]), 2);
@@ -485,6 +486,7 @@ void MbitMoreService::composeTxBuffer01()
   uint16_t heading = (uint16_t)normalizeCompassHeading(uBit.compass.heading());
   memcpy(&(txBuffer01[16]), &heading, 2);
 
+  updateLightSenser();
   // level of light amount (0-255) is sent as uint8_t.
   // txBuffer01[18] = (uint8_t)uBit.display.readLightLevel();
   txBuffer01[18] = lightSensorBuffer[0];
@@ -676,6 +678,7 @@ void MbitMoreService::notify()
   else
   {
     txDataFormat = 1;
+    mbitMoreProtocol = 0;
     displayFriendlyName();
   }
 }
