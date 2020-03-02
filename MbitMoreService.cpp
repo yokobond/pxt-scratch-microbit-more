@@ -276,7 +276,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       sharedData[data[1]] = value;
     }
   }
-  if (params->handle == rxCharacteristicHandle && params->len > 0)
+  if (params->handle == configCharHandle && params->len > 0)
   {
     mbitMoreProtocol = data[0];
   }
@@ -667,11 +667,11 @@ void MbitMoreService::notify()
     }
     else
     {
-      composeDefaultData(txBuffer01);
+      composeDefaultData(txData);
       uBit.ble->gattServer().notify(
           txCharacteristicHandle,
-          (uint8_t *)&txBuffer01,
-          sizeof(txBuffer01) / sizeof(txBuffer01[0]));
+          (uint8_t *)&txData,
+          sizeof(txData) / sizeof(txData[0]));
     }
     resetGesture();
   }
