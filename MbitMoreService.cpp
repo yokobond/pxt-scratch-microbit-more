@@ -80,7 +80,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   // Mbit More Service
   // Create the data structures that represent each of our characteristics in Soft Device.
 
-  // analogChar should be created with new to set read callback.
+  // analogChar should be created with new and hold with a variable to work read-callback.
   analogInChar = new GattCharacteristic(
       MBIT_MORE_ANALOG_IN,
       (uint8_t *)&analogInBuffer,
