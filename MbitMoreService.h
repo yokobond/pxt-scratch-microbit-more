@@ -7,6 +7,9 @@
 
 #define SCRATCH_MORE_EVT_NOTIFY 1
 
+/**
+ * Position of data format in a value holder.
+ */
 #define DATA_FORMAT_INDEX 19
 
 // UUIDs for our service and characteristics
@@ -40,11 +43,7 @@ public:
     * Notify data to Scratch3.
     */
   void notify();
-
-  void notifyIo();
-  void notifyLightSensor();
-  void notifyAccelerometer();
-  void notifyMagnetometer();
+  void notifyDefaultData();
   void notifySharedData();
 
   /**
@@ -58,14 +57,13 @@ public:
   int getSharedData(int index);
 
   /**
-    * Callback. Invoked when any of our attributes are read via BLE.
-    */
-  // void onDataRead(const GattReadCallbackParams *params);
+   * Callback. Invoked when AnalogIn is read via BLE.
+   */
   void onReadAnalogIn(GattReadAuthCallbackParams *authParams);
 
   /**
-    * Callback. Invoked when any of our attributes are written via BLE.
-    */
+   * Callback. Invoked when any of our attributes are written via BLE.
+   */
   void onDataWritten(const GattWriteCallbackParams *params);
 
   /**
@@ -73,12 +71,22 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
-  void updateLightSenser();
   void updateDigitalValues();
   void updateAnalogValues();
+  void updateLightSensor();
+  void updateAccelerometer();
+  void updateMagnetometer();
+
+  void writeIo();
   void writeAnalogIn();
+  void writeLightSensor();
+  void writeAccelerometer();
+  void writeMagnetometer();
+  void writeSharedData();
+
 
 private:
+
   // Data format [1,2,3] to send.
   uint8_t txDataFormat;
 
@@ -150,6 +158,26 @@ private:
   uint16_t analogValues[6];
 
   /**
+   * Light level value from 0 to 255.
+   */
+  int lightLevel;
+
+  /**
+   * Acceleration value [x, y, z] in milli-g.
+   */
+   int acceleration[6];
+
+  /**
+   * Rotation value [pitch, roll] in radians.
+   */
+  float rotation[2];
+
+  /**
+   * Magnetic force [x, y, z] in 1000 * micro-teslas.
+   */
+  int magneticForce[3];
+
+  /**
    * Shared data
    */
   int16_t sharedData[4];
@@ -187,10 +215,17 @@ private:
   GattAttribute::Handle_t txCharacteristicHandle;
   GattAttribute::Handle_t rxCharacteristicHandle;
 
-  GattCharacteristic *analogInChar; // Hold Characteristic to callback on read.
-  GattAttribute::Handle_t analogInCharHandle;
+  GattCharacteristic *configChar;
+  GattCharacteristic *ioChar;
+  GattCharacteristic *analogInChar;
+  GattCharacteristic *lightSensorChar;
+  GattCharacteristic *accelerometerChar;
+  GattCharacteristic *magnetometerChar;
+  GattCharacteristic *sharedDataChar;
+
   GattAttribute::Handle_t configCharHandle;
   GattAttribute::Handle_t ioCharHandle;
+  GattAttribute::Handle_t analogInCharHandle;
   GattAttribute::Handle_t lightSensorCharHandle;
   GattAttribute::Handle_t accelerometerCharHandle;
   GattAttribute::Handle_t magnetometerCharHandle;

@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "MbitMoreService.h"
 
-#define NOTIFY_PERIOD 10
+#define NOTIFY_PERIOD 100
 
 enum SharedDataIndex {
     //% block="data0"
@@ -24,16 +24,6 @@ namespace MbitMore {
             // run actions in the loop
             pxt::runAction0(_handler);
             // notyfy data to Scratch
-            _pService->notifySharedData();
-            fiber_sleep(NOTIFY_PERIOD);
-            _pService->notifyLightSensor();
-            fiber_sleep(NOTIFY_PERIOD);
-            _pService->notifyIo();
-            fiber_sleep(NOTIFY_PERIOD);
-            _pService->notifyAccelerometer();
-            fiber_sleep(NOTIFY_PERIOD);
-            _pService->notifyMagnetometer();
-            fiber_sleep(NOTIFY_PERIOD);
             _pService->notify();
             fiber_sleep(NOTIFY_PERIOD);
         }
