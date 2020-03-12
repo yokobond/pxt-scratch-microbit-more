@@ -71,6 +71,8 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
+  void update();
+
   void updateDigitalValues();
   void updateAnalogValues();
   void updateLightSensor();

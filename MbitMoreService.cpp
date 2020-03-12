@@ -634,14 +634,6 @@ void MbitMoreService::notify()
     }
     else
     {
-      updateDigitalValues();
-      writeIo();
-      updateLightSensor();
-      writeLightSensor();
-      updateAccelerometer();
-      writeAccelerometer();
-      updateMagnetometer();
-      writeMagnetometer();
       notifyDefaultData();
     }
     resetGesture();
@@ -679,6 +671,24 @@ int MbitMoreService::getSharedData(int index)
 void MbitMoreService::onBLEConnected(MicroBitEvent _e)
 {
   uBit.display.stopAnimation(); // To stop display friendly name.
+}
+
+/**
+ * Update sensors.
+ */
+void MbitMoreService::update()
+{
+  updateDigitalValues();
+  writeIo();
+
+  updateLightSensor();
+  writeLightSensor();
+
+  updateAccelerometer();
+  writeAccelerometer();
+
+  updateMagnetometer();
+  writeMagnetometer();
 }
 
 /**

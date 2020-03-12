@@ -1,6 +1,7 @@
 #include "pxt.h"
 #include "MbitMoreService.h"
 
+#define UPDATE_PERIOD 25
 #define NOTIFY_PERIOD 100
 
 enum SharedDataIndex {
@@ -18,6 +19,13 @@ enum SharedDataIndex {
 namespace MbitMore {
     MbitMoreService* _pService = NULL;
     Action _handler;
+
+    void update() {
+        while (NULL != _pService) {
+            _pService->update();
+            fiber_sleep(UPDATE_PERIOD);
+        }
+    }
 
     void notifyScratch() {
         while (NULL != _pService) {
@@ -40,6 +48,7 @@ namespace MbitMore {
         _pService = new MbitMoreService(uBit);
         _handler = handler;
         pxt::incr(_handler);
+        create_fiber(update);
         create_fiber(notifyScratch);
     }
 
