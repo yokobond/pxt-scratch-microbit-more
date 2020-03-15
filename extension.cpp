@@ -1,8 +1,8 @@
 #include "pxt.h"
 #include "MbitMoreService.h"
 
-#define UPDATE_PERIOD 25
-#define NOTIFY_PERIOD 100
+#define UPDATE_PERIOD 29
+#define NOTIFY_PERIOD 101
 
 enum SharedDataIndex {
     //% block="data0"
