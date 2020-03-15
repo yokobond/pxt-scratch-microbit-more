@@ -1,17 +1,18 @@
 #include "pxt.h"
 #include "MbitMoreService.h"
 
-#define NOTIFY_PERIOD 10
+#define UPDATE_PERIOD 29
+#define NOTIFY_PERIOD 101
 
-enum Slot {
-    //% block="slot0"
-    SLOT0 = 0,
-    //% block="slot1"
-    SLOT1 = 1,
-    //% block="slot2"
-    SLOT2 = 2,
-    //% block="slot3"
-    SLOT3 = 3,
+enum SharedDataIndex {
+    //% block="data0"
+    DATA0 = 0,
+    //% block="data1"
+    DATA1 = 1,
+    //% block="data2"
+    DATA2 = 2,
+    //% block="data3"
+    DATA3 = 3,
 };
 
 //% color=#FF9900 weight=95 icon="\uf1b0"
@@ -19,20 +20,26 @@ namespace MbitMore {
     MbitMoreService* _pService = NULL;
     Action _handler;
 
+    void update() {
+        while (NULL != _pService) {
+            _pService->update();
+            fiber_sleep(UPDATE_PERIOD);
+        }
+    }
+
     void notifyScratch() {
         while (NULL != _pService) {
             // run actions in the loop
             pxt::runAction0(_handler);
             // notyfy data to Scratch
             _pService->notify();
-            // wait period
             fiber_sleep(NOTIFY_PERIOD);
         }
     }
 
     /**
     * Starts a Scratch extension service.
-    * The handler can call ``setMbitMoreSlot`` to send any data to Scratch.
+    * The handler can call ``setMbitMoreSharedData`` to send any data to Scratch.
     */
     //%
     void startMbitMoreService(Action handler) {
@@ -41,26 +48,27 @@ namespace MbitMore {
         _pService = new MbitMoreService(uBit);
         _handler = handler;
         pxt::incr(_handler);
+        create_fiber(update);
         create_fiber(notifyScratch);
     }
 
     /**
-    * Set slot value.
+    * Set shared data value.
     */
     //%
-    void setMbitMoreSlot(Slot slot, int value) {
+    void setMbitMoreSharedData(SharedDataIndex index, int value) {
         if (NULL == _pService) return;
 
-        _pService->setSlot((int)slot, value);
+        _pService->setSharedData((int)index, value);
     }
 
     /**
-     * Get slot value. 
+     * Get shared data value. 
      */
     //%
-    int getMbitMoreSlot(Slot slot) {
+    int getMbitMoreSharedData(SharedDataIndex index) {
         if (NULL == _pService) return 0;
 
-        return _pService->getSlot((int)slot);
+        return _pService->getSharedData((int)index);
     }    
 }

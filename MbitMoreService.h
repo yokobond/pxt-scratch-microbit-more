@@ -7,10 +7,23 @@
 
 #define SCRATCH_MORE_EVT_NOTIFY 1
 
+/**
+ * Position of data format in a value holder.
+ */
+#define DATA_FORMAT_INDEX 19
+
 // UUIDs for our service and characteristics
-extern const uint16_t MbitMoreServiceUUID;
-extern const uint8_t MbitMoreServiceTxUUID[];
-extern const uint8_t MbitMoreServiceRxUUID[];
+extern const uint16_t MBIT_MORE_BASIC_SERVICE;
+extern const uint8_t MBIT_MORE_BASIC_TX[];
+extern const uint8_t MBIT_MORE_BASIC_RX[];
+extern const uint8_t MBIT_MORE_SERVICE[];
+extern const uint8_t MBIT_MORE_CONFIG[];
+extern const uint8_t MBIT_MORE_IO[];
+extern const uint8_t MBIT_MORE_LIGHT_SENSOR[];
+extern const uint8_t MBIT_MORE_ACCELEROMETER[];
+extern const uint8_t MBIT_MORE_MAGNETOMETER[];
+extern const uint8_t MBIT_MORE_SHARED_DATA[];
+extern const uint8_t MBIT_MORE_ANALOG_IN[];
 
 /**
   * Class definition for a MicroBitMore Service.
@@ -30,20 +43,27 @@ public:
     * Notify data to Scratch3.
     */
   void notify();
+  void notifyDefaultData();
+  void notifySharedData();
 
   /**
    * Set value to Slots.
    */
-  void setSlot(int slot, int value);
+  void setSharedData(int index, int value);
 
   /**
    * Get value to Slots.
    */
-  int getSlot(int slot);
+  int getSharedData(int index);
 
   /**
-    * Callback. Invoked when any of our attributes are written via BLE.
-    */
+   * Callback. Invoked when AnalogIn is read via BLE.
+   */
+  void onReadAnalogIn(GattReadAuthCallbackParams *authParams);
+
+  /**
+   * Callback. Invoked when any of our attributes are written via BLE.
+   */
   void onDataWritten(const GattWriteCallbackParams *params);
 
   /**
@@ -51,8 +71,21 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
+  void update();
+
   void updateDigitalValues();
   void updateAnalogValues();
+  void updateLightSensor();
+  void updateAccelerometer();
+  void updateMagnetometer();
+
+  void writeIo();
+  void writeAnalogIn();
+  void writeLightSensor();
+  void writeAccelerometer();
+  void writeMagnetometer();
+  void writeSharedData();
+
 
 private:
 
@@ -80,6 +113,27 @@ private:
   // Recieving buffer from Scratch3.
   uint8_t rxBuffer[20];
 
+  // Config buffer set by Scratch.
+  uint8_t configBuffer[20];
+
+  // Sending data of IO to Scratch.
+  uint8_t ioBuffer[20];
+
+  // Sending data of analog input to Scratch.
+  uint8_t analogInBuffer[20];
+
+  // Sending data of light sensor to Scratch.
+  uint8_t lightSensorBuffer[20];
+
+  // Sending data of accelerometer to Scratch.
+  uint8_t accelerometerBuffer[20];
+
+  // Sending data of magnetometer to Scratch.
+  uint8_t magnetometerBuffer[20];
+
+  // Shared data with Scratch.
+  uint8_t sharedBuffer[20];
+
   /**
    * Button state.
    */
@@ -106,9 +160,34 @@ private:
   uint16_t analogValues[6];
 
   /**
-   * Slots
+   * Light level value from 0 to 255.
    */
-  int16_t slots[4];
+  int lightLevel;
+
+  /**
+   * Acceleration value [x, y, z] in milli-g.
+   */
+   int acceleration[6];
+
+  /**
+   * Rotation value [pitch, roll] in radians.
+   */
+  float rotation[2];
+
+  /**
+   * Magnetic force [x, y, z] in 1000 * micro-teslas.
+   */
+  int magneticForce[3];
+
+  /**
+   * Shared data
+   */
+  int16_t sharedData[4];
+
+  /**
+   * Protocol of microbit more.
+   */
+  int mbitMoreProtocol;
 
   void setInputMode(int pinIndex);
   void setDigitalValue(int pinIndex, int value);
@@ -116,7 +195,7 @@ private:
   void setServoValue(int pinIndex, int angle, int range, int center);
 
   void onButtonChanged(MicroBitEvent);
-  void onAccelerometerChanged(MicroBitEvent);
+  void onGestureChanged(MicroBitEvent);
 
   void updateGesture(void);
   void resetGesture(void);
@@ -138,6 +217,22 @@ private:
   GattAttribute::Handle_t txCharacteristicHandle;
   GattAttribute::Handle_t rxCharacteristicHandle;
 
+  GattCharacteristic *configChar;
+  GattCharacteristic *ioChar;
+  GattCharacteristic *analogInChar;
+  GattCharacteristic *lightSensorChar;
+  GattCharacteristic *accelerometerChar;
+  GattCharacteristic *magnetometerChar;
+  GattCharacteristic *sharedDataChar;
+
+  GattAttribute::Handle_t configCharHandle;
+  GattAttribute::Handle_t ioCharHandle;
+  GattAttribute::Handle_t analogInCharHandle;
+  GattAttribute::Handle_t lightSensorCharHandle;
+  GattAttribute::Handle_t accelerometerCharHandle;
+  GattAttribute::Handle_t magnetometerCharHandle;
+  GattAttribute::Handle_t sharedDataCharHandle;
+
   enum ScratchBLECommand
   {
     CMD_PIN_CONFIG = 0x80,
@@ -147,7 +242,20 @@ private:
     CMD_PIN_OUTPUT = 0x91,
     CMD_PIN_PWM = 0x92,
     CMD_PIN_SERVO = 0x93,
-    CMD_SLOT_VALUE = 0xA0
+    CMD_SHARED_DATA_SET = 0xA0
+  };
+
+  enum MBitMoreDataFormat
+  {
+    MIX_01 = 0x01,
+    MIX_02 = 0x02,
+    MIX_03 = 0x03,
+    IO = 0x11,
+    ANSLOG_IN = 0x12,
+    LIGHT_SENSOR = 0x13,
+    ACCELEROMETER = 0x14,
+    MAGNETOMETER = 0x15,
+    SHARED_DATA = 0x16
   };
 };
 
