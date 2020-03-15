@@ -3,8 +3,10 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/../yotta/microbit-samples/yotta_modules/**"
+                "${workspaceFolder}/*",
+                "${workspaceFolder}/pxt_modules/**",
+                "${workspaceFolder}/../microbit-dal/**",
+                "${workspaceFolder}/../microbit-samples/**"
             ],
             "defines": [
                 "_DEBUG",
