@@ -37,12 +37,7 @@ declare namespace MbitMore {
     MIX_01 = 0x01,
     MIX_02 = 0x02,
     MIX_03 = 0x03,
-    IO = 0x11,
-    ANSLOG_IN = 0x12,
-    LIGHT_SENSOR = 0x13,
-    ACCELEROMETER = 0x14,
-    MAGNETOMETER = 0x15,
-    SHARED_DATA = 0x16,
+    SHARED_DATA = 0x11,
     }
 
 // Auto-generated. Do not edit. Really.

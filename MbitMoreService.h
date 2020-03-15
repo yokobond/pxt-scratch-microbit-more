@@ -19,9 +19,7 @@ extern const uint8_t MBIT_MORE_BASIC_RX[];
 extern const uint8_t MBIT_MORE_SERVICE[];
 extern const uint8_t MBIT_MORE_CONFIG[];
 extern const uint8_t MBIT_MORE_IO[];
-extern const uint8_t MBIT_MORE_LIGHT_SENSOR[];
-extern const uint8_t MBIT_MORE_ACCELEROMETER[];
-extern const uint8_t MBIT_MORE_MAGNETOMETER[];
+extern const uint8_t MBIT_MORE_SENSORS[];
 extern const uint8_t MBIT_MORE_SHARED_DATA[];
 extern const uint8_t MBIT_MORE_ANALOG_IN[];
 
@@ -81,9 +79,7 @@ public:
 
   void writeIo();
   void writeAnalogIn();
-  void writeLightSensor();
-  void writeAccelerometer();
-  void writeMagnetometer();
+  void writeSensors();
   void writeSharedData();
 
 
@@ -122,14 +118,8 @@ private:
   // Sending data of analog input to Scratch.
   uint8_t analogInBuffer[20];
 
-  // Sending data of light sensor to Scratch.
-  uint8_t lightSensorBuffer[20];
-
-  // Sending data of accelerometer to Scratch.
-  uint8_t accelerometerBuffer[20];
-
-  // Sending data of magnetometer to Scratch.
-  uint8_t magnetometerBuffer[20];
+  // Sending data of all sensors to Scratch.
+  uint8_t sensorsBuffer[20];
 
   // Shared data with Scratch.
   uint8_t sharedBuffer[20];
@@ -220,17 +210,13 @@ private:
   GattCharacteristic *configChar;
   GattCharacteristic *ioChar;
   GattCharacteristic *analogInChar;
-  GattCharacteristic *lightSensorChar;
-  GattCharacteristic *accelerometerChar;
-  GattCharacteristic *magnetometerChar;
+  GattCharacteristic *sensorsChar;
   GattCharacteristic *sharedDataChar;
 
   GattAttribute::Handle_t configCharHandle;
   GattAttribute::Handle_t ioCharHandle;
   GattAttribute::Handle_t analogInCharHandle;
-  GattAttribute::Handle_t lightSensorCharHandle;
-  GattAttribute::Handle_t accelerometerCharHandle;
-  GattAttribute::Handle_t magnetometerCharHandle;
+  GattAttribute::Handle_t sensorsCharHandle;
   GattAttribute::Handle_t sharedDataCharHandle;
 
   enum ScratchBLECommand
@@ -250,12 +236,7 @@ private:
     MIX_01 = 0x01,
     MIX_02 = 0x02,
     MIX_03 = 0x03,
-    IO = 0x11,
-    ANSLOG_IN = 0x12,
-    LIGHT_SENSOR = 0x13,
-    ACCELEROMETER = 0x14,
-    MAGNETOMETER = 0x15,
-    SHARED_DATA = 0x16
+    SHARED_DATA = 0x11
   };
 };
 
