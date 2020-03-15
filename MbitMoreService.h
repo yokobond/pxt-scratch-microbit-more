@@ -228,7 +228,8 @@ private:
     CMD_PIN_OUTPUT = 0x91,
     CMD_PIN_PWM = 0x92,
     CMD_PIN_SERVO = 0x93,
-    CMD_SHARED_DATA_SET = 0xA0
+    CMD_SHARED_DATA_SET = 0x94,
+    CMD_PROTOCOL_SET = 0xA0
   };
 
   enum MBitMoreDataFormat

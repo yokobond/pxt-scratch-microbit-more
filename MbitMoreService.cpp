@@ -226,10 +226,14 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(&value, &(data[2]), 2);
       sharedData[data[1]] = value;
     }
+    else if (data[0] == ScratchBLECommand::CMD_PROTOCOL_SET)
+    {
+      mbitMoreProtocol = data[1];
+    }
   }
   if (params->handle == configCharHandle && params->len > 0)
   {
-    mbitMoreProtocol = data[0];
+    // Shold be implemented later.
   }
 }
 
