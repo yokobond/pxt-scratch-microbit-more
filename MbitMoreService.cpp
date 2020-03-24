@@ -386,9 +386,9 @@ void MbitMoreService::updateLightSensor()
 
 void MbitMoreService::updateAccelerometer()
 {
-  acceleration[0] = uBit.accelerometer.getX();
+  acceleration[0] = - uBit.accelerometer.getX(); // Face side is positive in Z-axis.
   acceleration[1] = uBit.accelerometer.getY();
-  acceleration[2] = uBit.accelerometer.getZ();
+  acceleration[2] = - uBit.accelerometer.getZ(); // Face side is positive in Z-axis.
   rotation[0] = uBit.accelerometer.getPitchRadians();
   rotation[1] = uBit.accelerometer.getRollRadians();
 }
