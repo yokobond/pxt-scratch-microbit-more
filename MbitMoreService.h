@@ -82,9 +82,7 @@ public:
   void writeSensors();
   void writeSharedData();
 
-
 private:
-
   // Data format [1,2,3] to send.
   uint8_t txDataFormat;
 
@@ -157,7 +155,7 @@ private:
   /**
    * Acceleration value [x, y, z] in milli-g.
    */
-   int acceleration[6];
+  int acceleration[6];
 
   /**
    * Rotation value [pitch, roll] in radians.
