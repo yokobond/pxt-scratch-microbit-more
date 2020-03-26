@@ -6,7 +6,7 @@
                 "${workspaceFolder}/*",
                 "${workspaceFolder}/pxt_modules/**",
                 "${workspaceFolder}/../microbit-dal/**",
-                "${workspaceFolder}/../microbit-samples/**"
+                "${workspaceFolder}/../microbit-samples/yotta_modules/**"
             ],
             "defines": [
                 "_DEBUG",
