@@ -24,11 +24,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   // Initialize pin configuration.
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
-    setInputMode(gpio[i]);
-  }
-  for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
-  {
-    setInputMode(analogIn[i]);
+    setPullMode(gpio[i], PinMode::PullUp);
   }
 
   // Initialize microbit more protocol.
@@ -191,9 +187,17 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
         }
       }
     }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_INPUT)
+    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_UP)
     {
-      setInputMode(data[1]);
+      setPullMode(data[1], PinMode::PullUp);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_DOWN)
+    {
+      setPullMode(data[1], PinMode::PullDown);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_TOUCH)
+    {
+      setPinModeTouch(data[1]);
     }
     else if (data[0] == ScratchBLECommand::CMD_PIN_OUTPUT)
     {
@@ -355,7 +359,7 @@ void MbitMoreService::updateDigitalValues()
     if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(PullUp) == 1 ? 0 : 1)) << gpio[i]);
+          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(pullMode[gpio[i]]) == 1 ? 0 : 1)) << gpio[i]);
     }
   }
 }
@@ -366,7 +370,7 @@ void MbitMoreService::updateAnalogValues()
   {
     if (uBit.io.pin[analogIn[i]].isInput())
     {
-      uBit.io.pin[analogIn[i]].setPull(PullNone);
+      uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
       analogValues[i] = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
     }
   }
@@ -401,9 +405,10 @@ void MbitMoreService::updateMagnetometer()
   magneticForce[2] = uBit.compass.getZ();
 }
 
-void MbitMoreService::setInputMode(int pinIndex)
+void MbitMoreService::setPullMode(int pinIndex, PinMode pull)
 {
-  uBit.io.pin[pinIndex].getDigitalValue(); // Configure the pin as input, but the value is not used.
+  uBit.io.pin[pinIndex].getDigitalValue(pull);
+  pullMode[pinIndex] = pull;
 }
 
 void MbitMoreService::setDigitalValue(int pinIndex, int value)
@@ -418,18 +423,12 @@ void MbitMoreService::setAnalogValue(int pinIndex, int value)
 
 void MbitMoreService::setServoValue(int pinIndex, int angle, int range, int center)
 {
-  if (range == 0)
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle);
-  }
-  else if (center == 0)
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle, range);
-  }
-  else
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle, range, center);
-  }
+  uBit.io.pin[pinIndex].setServoValue(angle, range, center);
+}
+
+void MbitMoreService::setPinModeTouch(int pinIndex)
+{
+  uBit.io.pin[pinIndex].isTouched(); // Configure to touch mode then the return value is not used.
 }
 
 void MbitMoreService::composeDefaultData(uint8_t *buff)

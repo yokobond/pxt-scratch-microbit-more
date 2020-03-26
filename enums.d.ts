@@ -16,7 +16,7 @@ declare namespace MbitMore {
 
 
     /**
-     * Protocol of microbit more.
+     * Current mode of all pins.
      */
 
     declare const enum ScratchBLECommand
@@ -24,12 +24,15 @@ declare namespace MbitMore {
     CMD_PIN_CONFIG = 0x80,
     CMD_DISPLAY_TEXT = 0x81,
     CMD_DISPLAY_LED = 0x82,
-    CMD_PIN_INPUT = 0x90,
-    CMD_PIN_OUTPUT = 0x91,
-    CMD_PIN_PWM = 0x92,
-    CMD_PIN_SERVO = 0x93,
-    CMD_SHARED_DATA_SET = 0x94,
-    CMD_PROTOCOL_SET = 0xA0,
+    CMD_PROTOCOL_SET = 0x90,
+    CMD_PIN_PULL_UP = 0x91,
+    CMD_PIN_PULL_DOWN = 0x92,
+    // CMD_PIN_ANALOG_IN = 0x93,
+    CMD_PIN_OUTPUT = 0x94,
+    CMD_PIN_PWM = 0x95,
+    CMD_PIN_SERVO = 0x96,
+    CMD_PIN_TOUCH = 0x97,
+    CMD_SHARED_DATA_SET = 0x98,
     }
 
 
