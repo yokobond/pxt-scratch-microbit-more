@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/*",
                 "${workspaceFolder}/pxt_modules/**",
-                "${workspaceFolder}/../microbit-dal/**",
                 "${workspaceFolder}/../microbit-samples/yotta_modules/**"
             ],
             "defines": [
