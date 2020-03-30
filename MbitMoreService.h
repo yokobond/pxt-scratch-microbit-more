@@ -17,11 +17,9 @@ extern const uint16_t MBIT_MORE_BASIC_SERVICE;
 extern const uint8_t MBIT_MORE_BASIC_TX[];
 extern const uint8_t MBIT_MORE_BASIC_RX[];
 extern const uint8_t MBIT_MORE_SERVICE[];
-extern const uint8_t MBIT_MORE_CONFIG[];
+extern const uint8_t MBIT_MORE_EVENT[];
 extern const uint8_t MBIT_MORE_IO[];
-extern const uint8_t MBIT_MORE_LIGHT_SENSOR[];
-extern const uint8_t MBIT_MORE_ACCELEROMETER[];
-extern const uint8_t MBIT_MORE_MAGNETOMETER[];
+extern const uint8_t MBIT_MORE_SENSORS[];
 extern const uint8_t MBIT_MORE_SHARED_DATA[];
 extern const uint8_t MBIT_MORE_ANALOG_IN[];
 
@@ -71,6 +69,12 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
+
+  /**
+   * Callback. Invoked when a pin event sent.
+   */
+  void onPinEvent(MicroBitEvent evt);
+
   void update();
 
   void updateDigitalValues();
@@ -81,14 +85,10 @@ public:
 
   void writeIo();
   void writeAnalogIn();
-  void writeLightSensor();
-  void writeAccelerometer();
-  void writeMagnetometer();
+  void writeSensors();
   void writeSharedData();
 
-
 private:
-
   // Data format [1,2,3] to send.
   uint8_t txDataFormat;
 
@@ -111,25 +111,19 @@ private:
   uint8_t txBuffer03[20];
 
   // Recieving buffer from Scratch3.
-  uint8_t rxBuffer[20];
+  uint8_t rxBuffer[10];
 
   // Config buffer set by Scratch.
-  uint8_t configBuffer[20];
+  uint8_t eventBuffer[20];
 
   // Sending data of IO to Scratch.
-  uint8_t ioBuffer[20];
+  uint8_t ioBuffer[4];
 
   // Sending data of analog input to Scratch.
-  uint8_t analogInBuffer[20];
+  uint8_t analogInBuffer[6];
 
-  // Sending data of light sensor to Scratch.
-  uint8_t lightSensorBuffer[20];
-
-  // Sending data of accelerometer to Scratch.
-  uint8_t accelerometerBuffer[20];
-
-  // Sending data of magnetometer to Scratch.
-  uint8_t magnetometerBuffer[20];
+  // Sending data of all sensors to Scratch.
+  uint8_t sensorsBuffer[20];
 
   // Shared data with Scratch.
   uint8_t sharedBuffer[20];
@@ -167,7 +161,7 @@ private:
   /**
    * Acceleration value [x, y, z] in milli-g.
    */
-   int acceleration[6];
+  int acceleration[6];
 
   /**
    * Rotation value [pitch, roll] in radians.
@@ -189,10 +183,16 @@ private:
    */
   int mbitMoreProtocol;
 
-  void setInputMode(int pinIndex);
+  /**
+   * Current mode of all pins.
+   */
+  PinMode pullMode[21];
+
+  void setPullMode(int pinIndex, PinMode pull);
   void setDigitalValue(int pinIndex, int value);
   void setAnalogValue(int pinIndex, int value);
   void setServoValue(int pinIndex, int angle, int range, int center);
+  void setPinModeTouch(int pinIndex);
 
   void onButtonChanged(MicroBitEvent);
   void onGestureChanged(MicroBitEvent);
@@ -217,20 +217,16 @@ private:
   GattAttribute::Handle_t txCharacteristicHandle;
   GattAttribute::Handle_t rxCharacteristicHandle;
 
-  GattCharacteristic *configChar;
+  GattCharacteristic *eventChar;
   GattCharacteristic *ioChar;
   GattCharacteristic *analogInChar;
-  GattCharacteristic *lightSensorChar;
-  GattCharacteristic *accelerometerChar;
-  GattCharacteristic *magnetometerChar;
+  GattCharacteristic *sensorsChar;
   GattCharacteristic *sharedDataChar;
 
-  GattAttribute::Handle_t configCharHandle;
+  GattAttribute::Handle_t eventCharHandle;
   GattAttribute::Handle_t ioCharHandle;
   GattAttribute::Handle_t analogInCharHandle;
-  GattAttribute::Handle_t lightSensorCharHandle;
-  GattAttribute::Handle_t accelerometerCharHandle;
-  GattAttribute::Handle_t magnetometerCharHandle;
+  GattAttribute::Handle_t sensorsCharHandle;
   GattAttribute::Handle_t sharedDataCharHandle;
 
   enum ScratchBLECommand
@@ -238,11 +234,15 @@ private:
     CMD_PIN_CONFIG = 0x80,
     CMD_DISPLAY_TEXT = 0x81,
     CMD_DISPLAY_LED = 0x82,
-    CMD_PIN_INPUT = 0x90,
-    CMD_PIN_OUTPUT = 0x91,
-    CMD_PIN_PWM = 0x92,
-    CMD_PIN_SERVO = 0x93,
-    CMD_SHARED_DATA_SET = 0xA0
+    CMD_PROTOCOL_SET = 0x90,
+    CMD_PIN_PULL_UP = 0x91,
+    CMD_PIN_PULL_DOWN = 0x92,
+    CMD_PIN_OUTPUT = 0x93,
+    CMD_PIN_PWM = 0x94,
+    CMD_PIN_SERVO = 0x95,
+    CMD_PIN_TOUCH = 0x96,
+    CMD_EVENT_SET = 0x97,
+    CMD_SHARED_DATA_SET = 0x98
   };
 
   enum MBitMoreDataFormat
@@ -250,12 +250,8 @@ private:
     MIX_01 = 0x01,
     MIX_02 = 0x02,
     MIX_03 = 0x03,
-    IO = 0x11,
-    ANSLOG_IN = 0x12,
-    LIGHT_SENSOR = 0x13,
-    ACCELEROMETER = 0x14,
-    MAGNETOMETER = 0x15,
-    SHARED_DATA = 0x16
+    SHARED_DATA = 0x11,
+    EVENT = 0x12,
   };
 };
 

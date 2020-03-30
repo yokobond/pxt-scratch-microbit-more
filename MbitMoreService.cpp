@@ -24,11 +24,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   // Initialize pin configuration.
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
-    setInputMode(gpio[i]);
-  }
-  for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
-  {
-    setInputMode(analogIn[i]);
+    setPullMode(gpio[i], PinMode::PullUp);
   }
 
   // Initialize microbit more protocol.
@@ -80,18 +76,18 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   // Mbit More Service
   // Create the data structures that represent each of our characteristics in Soft Device.
 
-  configChar = new GattCharacteristic(
-      MBIT_MORE_CONFIG,
-      (uint8_t *)&configBuffer,
+  eventChar = new GattCharacteristic(
+      MBIT_MORE_EVENT,
+      (uint8_t *)&eventBuffer,
       0,
-      sizeof(configBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
+      sizeof(eventBuffer),
+      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
   ioChar = new GattCharacteristic(
       MBIT_MORE_IO,
       (uint8_t *)&ioBuffer,
       0,
       sizeof(ioBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ);
   analogInChar = new GattCharacteristic(
       MBIT_MORE_ANALOG_IN,
       (uint8_t *)&analogInBuffer,
@@ -99,24 +95,12 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
       sizeof(analogInBuffer),
       GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ);
   analogInChar->setReadAuthorizationCallback(this, &MbitMoreService::onReadAnalogIn);
-  lightSensorChar = new GattCharacteristic(
-      MBIT_MORE_LIGHT_SENSOR,
-      (uint8_t *)&lightSensorBuffer,
+  sensorsChar = new GattCharacteristic(
+      MBIT_MORE_SENSORS,
+      (uint8_t *)&sensorsBuffer,
       0,
-      sizeof(lightSensorBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-  accelerometerChar = new GattCharacteristic(
-      MBIT_MORE_ACCELEROMETER,
-      (uint8_t *)&accelerometerBuffer,
-      0,
-      sizeof(accelerometerBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-  magnetometerChar = new GattCharacteristic(
-      MBIT_MORE_MAGNETOMETER,
-      (uint8_t *)&magnetometerBuffer,
-      0,
-      sizeof(magnetometerBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
+      sizeof(sensorsBuffer),
+      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ);
   sharedDataChar = new GattCharacteristic(
       MBIT_MORE_SHARED_DATA,
       (uint8_t *)&sharedBuffer,
@@ -126,20 +110,16 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
 
   // Set default security requirements
   analogInChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
-  configChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
+  eventChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   ioChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
-  lightSensorChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
-  accelerometerChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
-  magnetometerChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
+  sensorsChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   sharedDataChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
 
   GattCharacteristic *mbitMoreChars[] = {
-      configChar,
+      eventChar,
       ioChar,
       analogInChar,
-      lightSensorChar,
-      accelerometerChar,
-      magnetometerChar,
+      sensorsChar,
       sharedDataChar};
   GattService mbitMoreService(
       MBIT_MORE_SERVICE, mbitMoreChars,
@@ -148,45 +128,14 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   uBit.ble->addService(mbitMoreService);
 
   analogInCharHandle = analogInChar->getValueHandle();
-  configCharHandle = configChar->getValueHandle();
+  eventCharHandle = eventChar->getValueHandle();
   ioCharHandle = ioChar->getValueHandle();
-  lightSensorCharHandle = lightSensorChar->getValueHandle();
-  accelerometerCharHandle = accelerometerChar->getValueHandle();
-  magnetometerCharHandle = magnetometerChar->getValueHandle();
+  sensorsCharHandle = sensorsChar->getValueHandle();
   sharedDataCharHandle = sharedDataChar->getValueHandle();
 
-  // Write initial value.
-  ioBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::IO;
-  analogInBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::ANSLOG_IN;
-  lightSensorBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::LIGHT_SENSOR;
-  accelerometerBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::ACCELEROMETER;
-  magnetometerBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::MAGNETOMETER;
+  // Initialize buffers.
   sharedBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::SHARED_DATA;
-
-  uBit.ble->gattServer().write(
-      ioCharHandle,
-      (uint8_t *)&ioBuffer,
-      sizeof(ioBuffer));
-  uBit.ble->gattServer().write(
-      analogInCharHandle,
-      (uint8_t *)&analogInBuffer,
-      sizeof(analogInBuffer));
-  uBit.ble->gattServer().write(
-      lightSensorCharHandle,
-      (uint8_t *)&lightSensorBuffer,
-      sizeof(lightSensorBuffer));
-  uBit.ble->gattServer().write(
-      accelerometerCharHandle,
-      (uint8_t *)&accelerometerBuffer,
-      sizeof(accelerometerBuffer));
-  uBit.ble->gattServer().write(
-      magnetometerCharHandle,
-      (uint8_t *)&magnetometerBuffer,
-      sizeof(magnetometerBuffer));
-  uBit.ble->gattServer().write(
-      sharedDataCharHandle,
-      (uint8_t *)&sharedBuffer,
-      sizeof(sharedBuffer));
+  eventBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::EVENT;
 
   // Advertise this service.
   const uint8_t *mbitMoreServices[] = {MBIT_MORE_SERVICE};
@@ -209,6 +158,10 @@ void MbitMoreService::onReadAnalogIn(GattReadAuthCallbackParams *authParams)
 {
   updateAnalogValues();
   writeAnalogIn();
+  authParams->data = (uint8_t *)&analogInBuffer;
+  authParams->offset = 0;
+  authParams->len = 20;
+  authParams->authorizationReply = AUTH_CALLBACK_REPLY_SUCCESS;
 }
 
 /**
@@ -239,9 +192,17 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
         }
       }
     }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_INPUT)
+    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_UP)
     {
-      setInputMode(data[1]);
+      setPullMode(data[1], PinMode::PullUp);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_DOWN)
+    {
+      setPullMode(data[1], PinMode::PullDown);
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PIN_TOUCH)
+    {
+      setPinModeTouch(data[1]);
     }
     else if (data[0] == ScratchBLECommand::CMD_PIN_OUTPUT)
     {
@@ -274,11 +235,107 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(&value, &(data[2]), 2);
       sharedData[data[1]] = value;
     }
+    else if (data[0] == ScratchBLECommand::CMD_PROTOCOL_SET)
+    {
+      mbitMoreProtocol = data[1];
+    }
+    else if (data[0] == ScratchBLECommand::CMD_EVENT_SET)
+    {
+      int componentID; // ID of the MicroBit Component that generated the event.
+      switch (data[1]) // Index of pin to set event.
+      {
+      case 0:
+        componentID = MICROBIT_ID_IO_P0;
+        break;
+      case 1:
+        componentID = MICROBIT_ID_IO_P1;
+        break;
+      case 2:
+        componentID = MICROBIT_ID_IO_P2;
+        break;
+      case 8:
+        componentID = MICROBIT_ID_IO_P8;
+        break;
+      case 13:
+        componentID = MICROBIT_ID_IO_P13;
+        break;
+      case 14:
+        componentID = MICROBIT_ID_IO_P14;
+        break;
+      case 15:
+        componentID = MICROBIT_ID_IO_P15;
+        break;
+      case 16:
+        componentID = MICROBIT_ID_IO_P16;
+        break;
+
+      default:
+        return;
+      }
+      if (data[2] == MICROBIT_PIN_EVENT_NONE)
+      {
+        uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
+        return;
+      }
+      uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+      uBit.io.pin[data[1]].getDigitalValue(); // Configure pin as digital input.
+      uBit.io.pin[data[1]].eventOn((int)data[2]);
+    }
   }
-  if (params->handle == configCharHandle && params->len > 0)
+}
+
+/**
+ * Callback. Invoked when a pin event sent.
+ */
+void MbitMoreService::onPinEvent(MicroBitEvent evt)
+{
+  uint8_t pinIndex;
+  switch (evt.source) // ID of the MicroBit Component that generated the event. (uint16_t)
   {
-    mbitMoreProtocol = data[0];
+  case MICROBIT_ID_IO_P0:
+    eventBuffer[0] = 0;
+    break;
+  case MICROBIT_ID_IO_P1:
+    eventBuffer[0] = 1;
+    break;
+  case MICROBIT_ID_IO_P2:
+    eventBuffer[0] = 2;
+    break;
+  case MICROBIT_ID_IO_P8:
+    eventBuffer[0] = 8;
+    break;
+  case MICROBIT_ID_IO_P13:
+    eventBuffer[0] = 13;
+    break;
+  case MICROBIT_ID_IO_P14:
+    eventBuffer[0] = 14;
+    break;
+  case MICROBIT_ID_IO_P15:
+    eventBuffer[0] = 15;
+    break;
+  case MICROBIT_ID_IO_P16:
+    eventBuffer[0] = 16;
+    break;
+
+  default:
+    break;
   }
+
+  // event ID is sent as uint16_t little-endian.
+  // #define MICROBIT_PIN_EVT_RISE               2
+  // #define MICROBIT_PIN_EVT_FALL               3
+  // #define MICROBIT_PIN_EVT_PULSE_HI           4
+  // #define MICROBIT_PIN_EVT_PULSE_LO           5
+  memcpy(&(eventBuffer[1]), &(evt.value), 2);
+
+  // event timestamp is sent as uint32_t little-endian coerced from uint64_t value.
+  uint32_t timestamp = (uint32_t)evt.timestamp;
+  memcpy(&(eventBuffer[3]), &timestamp, 4);
+
+  uBit.ble->gattServer().notify(
+      eventCharHandle,
+      (uint8_t *)&eventBuffer,
+      sizeof(eventBuffer) / sizeof(eventBuffer[0]));
 }
 
 /**
@@ -399,7 +456,7 @@ void MbitMoreService::updateDigitalValues()
     if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(PullUp) == 1 ? 0 : 1)) << gpio[i]);
+          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(pullMode[gpio[i]]) == 1 ? 0 : 1)) << gpio[i]);
     }
   }
 }
@@ -410,7 +467,7 @@ void MbitMoreService::updateAnalogValues()
   {
     if (uBit.io.pin[analogIn[i]].isInput())
     {
-      uBit.io.pin[analogIn[i]].setPull(PullNone);
+      uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
       analogValues[i] = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
     }
   }
@@ -430,9 +487,9 @@ void MbitMoreService::updateLightSensor()
 
 void MbitMoreService::updateAccelerometer()
 {
-  acceleration[0] = uBit.accelerometer.getX();
+  acceleration[0] = -uBit.accelerometer.getX(); // Face side is positive in Z-axis.
   acceleration[1] = uBit.accelerometer.getY();
-  acceleration[2] = uBit.accelerometer.getZ();
+  acceleration[2] = -uBit.accelerometer.getZ(); // Face side is positive in Z-axis.
   rotation[0] = uBit.accelerometer.getPitchRadians();
   rotation[1] = uBit.accelerometer.getRollRadians();
 }
@@ -445,9 +502,10 @@ void MbitMoreService::updateMagnetometer()
   magneticForce[2] = uBit.compass.getZ();
 }
 
-void MbitMoreService::setInputMode(int pinIndex)
+void MbitMoreService::setPullMode(int pinIndex, PinMode pull)
 {
-  uBit.io.pin[pinIndex].getDigitalValue(); // Configure the pin as input, but the value is not used.
+  uBit.io.pin[pinIndex].getDigitalValue(pull);
+  pullMode[pinIndex] = pull;
 }
 
 void MbitMoreService::setDigitalValue(int pinIndex, int value)
@@ -462,18 +520,12 @@ void MbitMoreService::setAnalogValue(int pinIndex, int value)
 
 void MbitMoreService::setServoValue(int pinIndex, int angle, int range, int center)
 {
-  if (range == 0)
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle);
-  }
-  else if (center == 0)
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle, range);
-  }
-  else
-  {
-    uBit.io.pin[pinIndex].setServoValue(angle, range, center);
-  }
+  uBit.io.pin[pinIndex].setServoValue(angle, range, center);
+}
+
+void MbitMoreService::setPinModeTouch(int pinIndex)
+{
+  uBit.io.pin[pinIndex].isTouched(); // Configure to touch mode then the return value is not used.
 }
 
 void MbitMoreService::composeDefaultData(uint8_t *buff)
@@ -680,15 +732,10 @@ void MbitMoreService::update()
 {
   updateDigitalValues();
   writeIo();
-
   updateLightSensor();
-  writeLightSensor();
-
   updateAccelerometer();
-  writeAccelerometer();
-
   updateMagnetometer();
-  writeMagnetometer();
+  writeSensors();
 }
 
 /**
@@ -702,60 +749,6 @@ void MbitMoreService::writeIo()
       ioCharHandle,
       (uint8_t *)&ioBuffer,
       sizeof(ioBuffer) / sizeof(ioBuffer[0]));
-}
-
-/**
-  * Write accelerometer characteristics.
-  */
-void MbitMoreService::writeAccelerometer()
-{
-  int16_t data;
-  // Acceleration X [milli-g] is sent as int16_t little-endian.
-  data = (int16_t)acceleration[0];
-  memcpy(&(accelerometerBuffer[0]), &data, 2);
-  // Acceleration Y [milli-g] is sent as int16_t little-endian.
-  data = (int16_t)acceleration[1];
-  memcpy(&(accelerometerBuffer[2]), &data, 2);
-  // Acceleration Z [milli-g] is sent as int16_t little-endian.
-  data = (int16_t)acceleration[2];
-  memcpy(&(accelerometerBuffer[4]), &data, 2);
-  // Pitch (radians / 1000) is sent as int16_t little-endian [6..7].
-  data = (int16_t)(rotation[0] * 1000);
-  memcpy(&(accelerometerBuffer[6]), &data, 2);
-  // Roll (radians / 1000) is sent as int16_t little-endian [8..9].
-  data = (int16_t)(rotation[1] * 1000);
-  memcpy(&(accelerometerBuffer[8]), &data, 2);
-
-  uBit.ble->gattServer().write(
-      accelerometerCharHandle,
-      (uint8_t *)&accelerometerBuffer,
-      sizeof(accelerometerBuffer) / sizeof(accelerometerBuffer[0]));
-}
-
-/**
-  * Write magnetometer characteristics.
-  */
-void MbitMoreService::writeMagnetometer()
-{
-  // compassHeading angle (0 - 359 degrees) is sent as uint16_t little-endian [0..1].
-  uint16_t heading = (uint16_t)normalizeCompassHeading(compassHeading);
-  memcpy(&(magnetometerBuffer[0]), &heading, 2);
-
-  int16_t force;
-  // Magnetic force X (micro-teslas) is sent as uint16_t little-endian [2..3].
-  force = (int16_t)(magneticForce[0] / 1000);
-  memcpy(&(magnetometerBuffer[2]), &force, 2);
-  // Magnetic force Y (micro-teslas) is sent as uint16_t little-endian [4..5].
-  force = (int16_t)(magneticForce[1] / 1000);
-  memcpy(&(magnetometerBuffer[4]), &force, 2);
-  // Magnetic force Z (micro-teslas) is sent as uint16_t little-endian [6..7].
-  force = (int16_t)(magneticForce[2] / 1000);
-  memcpy(&(magnetometerBuffer[6]), &force, 2);
-
-  uBit.ble->gattServer().write(
-      magnetometerCharHandle,
-      (uint8_t *)&magnetometerBuffer,
-      sizeof(magnetometerBuffer) / sizeof(magnetometerBuffer[0]));
 }
 
 /**
@@ -775,16 +768,52 @@ void MbitMoreService::writeSharedData()
 }
 
 /**
-  * Write light sensor characteristics.
+  * Write data of all sensors to the characteristic.
   */
-void MbitMoreService::writeLightSensor()
+void MbitMoreService::writeSensors()
 {
-  lightSensorBuffer[0] = (uint8_t)lightLevel;
+  // Accelerometer
+  int16_t acc;
+  // Acceleration X [milli-g] is sent as int16_t little-endian.
+  acc = (int16_t)acceleration[0];
+  memcpy(&(sensorsBuffer[0]), &acc, 2);
+  // Acceleration Y [milli-g] is sent as int16_t little-endian.
+  acc = (int16_t)acceleration[1];
+  memcpy(&(sensorsBuffer[2]), &acc, 2);
+  // Acceleration Z [milli-g] is sent as int16_t little-endian.
+  acc = (int16_t)acceleration[2];
+  memcpy(&(sensorsBuffer[4]), &acc, 2);
+
+  int16_t rot;
+  // Pitch (radians / 1000) is sent as int16_t little-endian [6..7].
+  rot = (int16_t)(rotation[0] * 1000);
+  memcpy(&(sensorsBuffer[6]), &rot, 2);
+  // Roll (radians / 1000) is sent as int16_t little-endian [8..9].
+  rot = (int16_t)(rotation[1] * 1000);
+  memcpy(&(sensorsBuffer[8]), &rot, 2);
+
+  // Magnetometer
+  uint16_t heading = (uint16_t)normalizeCompassHeading(compassHeading);
+  memcpy(&(sensorsBuffer[10]), &heading, 2);
+
+  int16_t force;
+  // Magnetic force X (micro-teslas) is sent as uint16_t little-endian [2..3].
+  force = (int16_t)(magneticForce[0] / 1000);
+  memcpy(&(sensorsBuffer[12]), &force, 2);
+  // Magnetic force Y (micro-teslas) is sent as uint16_t little-endian [4..5].
+  force = (int16_t)(magneticForce[1] / 1000);
+  memcpy(&(sensorsBuffer[14]), &force, 2);
+  // Magnetic force Z (micro-teslas) is sent as uint16_t little-endian [6..7].
+  force = (int16_t)(magneticForce[2] / 1000);
+  memcpy(&(sensorsBuffer[16]), &force, 2);
+
+  // Light sensor
+  sensorsBuffer[18] = (uint8_t)lightLevel;
 
   uBit.ble->gattServer().write(
-      lightSensorCharHandle,
-      (uint8_t *)&lightSensorBuffer,
-      sizeof(lightSensorBuffer) / sizeof(lightSensorBuffer[0]));
+      sensorsCharHandle,
+      (uint8_t *)&sensorsBuffer,
+      sizeof(sensorsBuffer) / sizeof(sensorsBuffer[0]));
 }
 
 void MbitMoreService::displayFriendlyName()
@@ -798,10 +827,8 @@ const uint8_t MBIT_MORE_BASIC_TX[] = {0x52, 0x61, 0xda, 0x01, 0xfa, 0x7e, 0x42, 
 const uint8_t MBIT_MORE_BASIC_RX[] = {0x52, 0x61, 0xda, 0x02, 0xfa, 0x7e, 0x42, 0xab, 0x85, 0x0b, 0x7c, 0x80, 0x22, 0x00, 0x97, 0xcc};
 
 const uint8_t MBIT_MORE_SERVICE[] = {0xa6, 0x2d, 0x57, 0x4e, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_CONFIG[] = {0xa6, 0x2d, 0x00, 0x01, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
+const uint8_t MBIT_MORE_EVENT[] = {0xa6, 0x2d, 0x00, 0x01, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
 const uint8_t MBIT_MORE_IO[] = {0xa6, 0x2d, 0x00, 0x02, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
 const uint8_t MBIT_MORE_ANALOG_IN[] = {0xa6, 0x2d, 0x00, 0x03, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_LIGHT_SENSOR[] = {0xa6, 0x2d, 0x00, 0x04, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_ACCELEROMETER[] = {0xa6, 0x2d, 0x00, 0x05, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_MAGNETOMETER[] = {0xa6, 0x2d, 0x00, 0x06, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_SHARED_DATA[] = {0xa6, 0x2d, 0x00, 0x07, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
+const uint8_t MBIT_MORE_SENSORS[] = {0xa6, 0x2d, 0x00, 0x04, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
+const uint8_t MBIT_MORE_SHARED_DATA[] = {0xa6, 0x2d, 0x00, 0x10, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
