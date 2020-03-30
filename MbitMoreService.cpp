@@ -76,12 +76,12 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   // Mbit More Service
   // Create the data structures that represent each of our characteristics in Soft Device.
 
-  configChar = new GattCharacteristic(
-      MBIT_MORE_CONFIG,
-      (uint8_t *)&configBuffer,
+  eventChar = new GattCharacteristic(
+      MBIT_MORE_EVENT,
+      (uint8_t *)&eventBuffer,
       0,
-      sizeof(configBuffer),
-      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_WRITE_WITHOUT_RESPONSE);
+      sizeof(eventBuffer),
+      GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
   ioChar = new GattCharacteristic(
       MBIT_MORE_IO,
       (uint8_t *)&ioBuffer,
@@ -110,13 +110,13 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
 
   // Set default security requirements
   analogInChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
-  configChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
+  eventChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   ioChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   sensorsChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
   sharedDataChar->requireSecurity(SecurityManager::MICROBIT_BLE_SECURITY_LEVEL);
 
   GattCharacteristic *mbitMoreChars[] = {
-      configChar,
+      eventChar,
       ioChar,
       analogInChar,
       sensorsChar,
@@ -128,13 +128,14 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   uBit.ble->addService(mbitMoreService);
 
   analogInCharHandle = analogInChar->getValueHandle();
-  configCharHandle = configChar->getValueHandle();
+  eventCharHandle = eventChar->getValueHandle();
   ioCharHandle = ioChar->getValueHandle();
   sensorsCharHandle = sensorsChar->getValueHandle();
   sharedDataCharHandle = sharedDataChar->getValueHandle();
 
   // Initialize buffers.
   sharedBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::SHARED_DATA;
+  eventBuffer[DATA_FORMAT_INDEX] = MBitMoreDataFormat::EVENT;
 
   // Advertise this service.
   const uint8_t *mbitMoreServices[] = {MBIT_MORE_SERVICE};
@@ -238,11 +239,103 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
     {
       mbitMoreProtocol = data[1];
     }
+    else if (data[0] == ScratchBLECommand::CMD_EVENT_SET)
+    {
+      int componentID; // ID of the MicroBit Component that generated the event.
+      switch (data[1]) // Index of pin to set event.
+      {
+      case 0:
+        componentID = MICROBIT_ID_IO_P0;
+        break;
+      case 1:
+        componentID = MICROBIT_ID_IO_P1;
+        break;
+      case 2:
+        componentID = MICROBIT_ID_IO_P2;
+        break;
+      case 8:
+        componentID = MICROBIT_ID_IO_P8;
+        break;
+      case 13:
+        componentID = MICROBIT_ID_IO_P13;
+        break;
+      case 14:
+        componentID = MICROBIT_ID_IO_P14;
+        break;
+      case 15:
+        componentID = MICROBIT_ID_IO_P15;
+        break;
+      case 16:
+        componentID = MICROBIT_ID_IO_P16;
+        break;
+
+      default:
+        return;
+      }
+      if (data[2] == MICROBIT_PIN_EVENT_NONE)
+      {
+        uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
+        return;
+      }
+      uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+      uBit.io.pin[data[1]].getDigitalValue(); // Configure pin as digital input.
+      uBit.io.pin[data[1]].eventOn((int)data[2]);
+    }
   }
-  if (params->handle == configCharHandle && params->len > 0)
+}
+
+/**
+ * Callback. Invoked when a pin event sent.
+ */
+void MbitMoreService::onPinEvent(MicroBitEvent evt)
+{
+  uint8_t pinIndex;
+  switch (evt.source) // ID of the MicroBit Component that generated the event. (uint16_t)
   {
-    // Shold be implemented later.
+  case MICROBIT_ID_IO_P0:
+    eventBuffer[0] = 0;
+    break;
+  case MICROBIT_ID_IO_P1:
+    eventBuffer[0] = 1;
+    break;
+  case MICROBIT_ID_IO_P2:
+    eventBuffer[0] = 2;
+    break;
+  case MICROBIT_ID_IO_P8:
+    eventBuffer[0] = 8;
+    break;
+  case MICROBIT_ID_IO_P13:
+    eventBuffer[0] = 13;
+    break;
+  case MICROBIT_ID_IO_P14:
+    eventBuffer[0] = 14;
+    break;
+  case MICROBIT_ID_IO_P15:
+    eventBuffer[0] = 15;
+    break;
+  case MICROBIT_ID_IO_P16:
+    eventBuffer[0] = 16;
+    break;
+
+  default:
+    break;
   }
+
+  // event ID is sent as uint16_t little-endian.
+  // #define MICROBIT_PIN_EVT_RISE               2
+  // #define MICROBIT_PIN_EVT_FALL               3
+  // #define MICROBIT_PIN_EVT_PULSE_HI           4
+  // #define MICROBIT_PIN_EVT_PULSE_LO           5
+  memcpy(&(eventBuffer[1]), &(evt.value), 2);
+
+  // event timestamp is sent as uint32_t little-endian coerced from uint64_t value.
+  uint32_t timestamp = (uint32_t)evt.timestamp;
+  memcpy(&(eventBuffer[3]), &timestamp, 4);
+
+  uBit.ble->gattServer().notify(
+      eventCharHandle,
+      (uint8_t *)&eventBuffer,
+      sizeof(eventBuffer) / sizeof(eventBuffer[0]));
 }
 
 /**
@@ -734,7 +827,7 @@ const uint8_t MBIT_MORE_BASIC_TX[] = {0x52, 0x61, 0xda, 0x01, 0xfa, 0x7e, 0x42, 
 const uint8_t MBIT_MORE_BASIC_RX[] = {0x52, 0x61, 0xda, 0x02, 0xfa, 0x7e, 0x42, 0xab, 0x85, 0x0b, 0x7c, 0x80, 0x22, 0x00, 0x97, 0xcc};
 
 const uint8_t MBIT_MORE_SERVICE[] = {0xa6, 0x2d, 0x57, 0x4e, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
-const uint8_t MBIT_MORE_CONFIG[] = {0xa6, 0x2d, 0x00, 0x01, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
+const uint8_t MBIT_MORE_EVENT[] = {0xa6, 0x2d, 0x00, 0x01, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
 const uint8_t MBIT_MORE_IO[] = {0xa6, 0x2d, 0x00, 0x02, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
 const uint8_t MBIT_MORE_ANALOG_IN[] = {0xa6, 0x2d, 0x00, 0x03, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};
 const uint8_t MBIT_MORE_SENSORS[] = {0xa6, 0x2d, 0x00, 0x04, 0x1b, 0x34, 0x40, 0x92, 0x8d, 0xee, 0x41, 0x51, 0xf6, 0x3b, 0x28, 0x65};

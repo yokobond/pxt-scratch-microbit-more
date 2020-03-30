@@ -27,11 +27,11 @@ declare namespace MbitMore {
     CMD_PROTOCOL_SET = 0x90,
     CMD_PIN_PULL_UP = 0x91,
     CMD_PIN_PULL_DOWN = 0x92,
-    // CMD_PIN_ANALOG_IN = 0x93,
-    CMD_PIN_OUTPUT = 0x94,
-    CMD_PIN_PWM = 0x95,
-    CMD_PIN_SERVO = 0x96,
-    CMD_PIN_TOUCH = 0x97,
+    CMD_PIN_OUTPUT = 0x93,
+    CMD_PIN_PWM = 0x94,
+    CMD_PIN_SERVO = 0x95,
+    CMD_PIN_TOUCH = 0x96,
+    CMD_EVENT_SET = 0x97,
     CMD_SHARED_DATA_SET = 0x98,
     }
 
@@ -42,6 +42,7 @@ declare namespace MbitMore {
     MIX_02 = 0x02,
     MIX_03 = 0x03,
     SHARED_DATA = 0x11,
+    EVENT = 0x12,
     }
 
 // Auto-generated. Do not edit. Really.

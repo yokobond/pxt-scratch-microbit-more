@@ -17,7 +17,7 @@ extern const uint16_t MBIT_MORE_BASIC_SERVICE;
 extern const uint8_t MBIT_MORE_BASIC_TX[];
 extern const uint8_t MBIT_MORE_BASIC_RX[];
 extern const uint8_t MBIT_MORE_SERVICE[];
-extern const uint8_t MBIT_MORE_CONFIG[];
+extern const uint8_t MBIT_MORE_EVENT[];
 extern const uint8_t MBIT_MORE_IO[];
 extern const uint8_t MBIT_MORE_SENSORS[];
 extern const uint8_t MBIT_MORE_SHARED_DATA[];
@@ -69,6 +69,12 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
+
+  /**
+   * Callback. Invoked when a pin event sent.
+   */
+  void onPinEvent(MicroBitEvent evt);
+
   void update();
 
   void updateDigitalValues();
@@ -105,16 +111,16 @@ private:
   uint8_t txBuffer03[20];
 
   // Recieving buffer from Scratch3.
-  uint8_t rxBuffer[20];
+  uint8_t rxBuffer[10];
 
   // Config buffer set by Scratch.
-  uint8_t configBuffer[20];
+  uint8_t eventBuffer[20];
 
   // Sending data of IO to Scratch.
-  uint8_t ioBuffer[20];
+  uint8_t ioBuffer[4];
 
   // Sending data of analog input to Scratch.
-  uint8_t analogInBuffer[20];
+  uint8_t analogInBuffer[6];
 
   // Sending data of all sensors to Scratch.
   uint8_t sensorsBuffer[20];
@@ -211,13 +217,13 @@ private:
   GattAttribute::Handle_t txCharacteristicHandle;
   GattAttribute::Handle_t rxCharacteristicHandle;
 
-  GattCharacteristic *configChar;
+  GattCharacteristic *eventChar;
   GattCharacteristic *ioChar;
   GattCharacteristic *analogInChar;
   GattCharacteristic *sensorsChar;
   GattCharacteristic *sharedDataChar;
 
-  GattAttribute::Handle_t configCharHandle;
+  GattAttribute::Handle_t eventCharHandle;
   GattAttribute::Handle_t ioCharHandle;
   GattAttribute::Handle_t analogInCharHandle;
   GattAttribute::Handle_t sensorsCharHandle;
@@ -231,11 +237,11 @@ private:
     CMD_PROTOCOL_SET = 0x90,
     CMD_PIN_PULL_UP = 0x91,
     CMD_PIN_PULL_DOWN = 0x92,
-    // CMD_PIN_ANALOG_IN = 0x93,
-    CMD_PIN_OUTPUT = 0x94,
-    CMD_PIN_PWM = 0x95,
-    CMD_PIN_SERVO = 0x96,
-    CMD_PIN_TOUCH = 0x97,
+    CMD_PIN_OUTPUT = 0x93,
+    CMD_PIN_PWM = 0x94,
+    CMD_PIN_SERVO = 0x95,
+    CMD_PIN_TOUCH = 0x96,
+    CMD_EVENT_SET = 0x97,
     CMD_SHARED_DATA_SET = 0x98
   };
 
@@ -244,7 +250,8 @@ private:
     MIX_01 = 0x01,
     MIX_02 = 0x02,
     MIX_03 = 0x03,
-    SHARED_DATA = 0x11
+    SHARED_DATA = 0x11,
+    EVENT = 0x12,
   };
 };
 
