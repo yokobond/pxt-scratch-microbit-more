@@ -160,7 +160,7 @@ void MbitMoreService::onReadAnalogIn(GattReadAuthCallbackParams *authParams)
   writeAnalogIn();
   authParams->data = (uint8_t *)&analogInBuffer;
   authParams->offset = 0;
-  authParams->len = 20;
+  authParams->len = sizeof(analogInBuffer) / sizeof(analogInBuffer[0]);
   authParams->authorizationReply = AUTH_CALLBACK_REPLY_SUCCESS;
 }
 
