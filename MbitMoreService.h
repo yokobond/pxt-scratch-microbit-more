@@ -69,7 +69,6 @@ public:
    */
   void onBLEConnected(MicroBitEvent e);
 
-
   /**
    * Callback. Invoked when a pin event sent.
    */
@@ -234,15 +233,26 @@ private:
     CMD_PIN_CONFIG = 0x80,
     CMD_DISPLAY_TEXT = 0x81,
     CMD_DISPLAY_LED = 0x82,
-    CMD_PROTOCOL_SET = 0x90,
-    CMD_PIN_PULL_UP = 0x91,
-    CMD_PIN_PULL_DOWN = 0x92,
-    CMD_PIN_OUTPUT = 0x93,
-    CMD_PIN_PWM = 0x94,
-    CMD_PIN_SERVO = 0x95,
-    CMD_PIN_TOUCH = 0x96,
-    CMD_EVENT_SET = 0x97,
-    CMD_SHARED_DATA_SET = 0x98
+    CMD_PROTOCOL = 0x90,
+    CMD_PIN = 0x91,
+    CMD_SHARED_DATA = 0x92
+  };
+
+  enum MBitMorePinCommand
+  {
+    PIN_OUTPUT = 0x01,
+    PIN_PWM = 0x02,
+    PIN_SERVO = 0x03,
+    PIN_PULL = 0x04,
+    PIN_EVENT = 0x05,
+    PIN_TOUCH = 0x06,
+  };
+
+  enum MBitMorePinMode
+  {
+    PullNone = 0,
+    PullUp = 1,
+    PullDown = 2,
   };
 
   enum MBitMoreDataFormat
