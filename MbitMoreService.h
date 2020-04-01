@@ -37,6 +37,8 @@ public:
     */
   MbitMoreService(MicroBit &_uBit);
 
+  void initConfiguration();
+
   /**
     * Notify data to Scratch3.
     */

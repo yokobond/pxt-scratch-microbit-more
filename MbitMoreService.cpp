@@ -21,14 +21,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
     uBit.compass.calibrate();
   }
 
-  // Initialize pin configuration.
-  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
-  {
-    setPullMode(gpio[i], PinMode::PullUp);
-  }
-
-  // Initialize microbit more protocol.
-  mbitMoreProtocol = 0;
+  initConfiguration();
 
   // Create the data structures that represent each of our characteristics in Soft Device.
   GattCharacteristic txCharacteristic(
@@ -149,6 +142,21 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
   uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_EVT_ANY, this, &MbitMoreService::onGestureChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
+}
+
+void MbitMoreService::initConfiguration()
+{
+  // Initialize pin configuration.
+  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
+  {
+    setPullMode(gpio[i], PinMode::PullUp);
+  }
+
+  // Initialize microbit more protocol.
+  mbitMoreProtocol = 0;
+
+  // Initialize data format.
+  txDataFormat = 1;
 }
 
 /**
@@ -704,8 +712,7 @@ void MbitMoreService::notify()
   }
   else
   {
-    txDataFormat = 1;
-    mbitMoreProtocol = 0;
+    initConfiguration();
     displayFriendlyName();
   }
 }
