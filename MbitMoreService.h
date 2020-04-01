@@ -226,7 +226,6 @@ private:
 
   GattAttribute::Handle_t eventCharHandle;
   GattAttribute::Handle_t ioCharHandle;
-  GattAttribute::Handle_t analogInCharHandle;
   GattAttribute::Handle_t sensorsCharHandle;
   GattAttribute::Handle_t sharedDataCharHandle;
 

@@ -120,7 +120,6 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
 
   uBit.ble->addService(mbitMoreService);
 
-  analogInCharHandle = analogInChar->getValueHandle();
   eventCharHandle = eventChar->getValueHandle();
   ioCharHandle = ioChar->getValueHandle();
   sensorsCharHandle = sensorsChar->getValueHandle();
@@ -165,7 +164,10 @@ void MbitMoreService::initConfiguration()
 void MbitMoreService::onReadAnalogIn(GattReadAuthCallbackParams *authParams)
 {
   updateAnalogValues();
-  writeAnalogIn();
+  // analog value (0 to 1023) is sent as uint16_t little-endian.
+  memcpy(&(analogInBuffer[0]), &(analogValues[0]), 2);
+  memcpy(&(analogInBuffer[2]), &(analogValues[1]), 2);
+  memcpy(&(analogInBuffer[4]), &(analogValues[2]), 2);
   authParams->data = (uint8_t *)&analogInBuffer;
   authParams->offset = 0;
   authParams->len = sizeof(analogInBuffer) / sizeof(analogInBuffer[0]);
@@ -615,21 +617,6 @@ void MbitMoreService::composeTxBuffer03()
   // Acceleration Z [milli-g] is sent as int16_t little-endian in 03:16.
   data = (int16_t)(acceleration[2]);
   memcpy(&(txBuffer03[16]), &data, 2);
-}
-
-/**
-  * Write analog input values on BLE.
-  */
-void MbitMoreService::writeAnalogIn()
-{
-  // analog value (0 to 1023) is sent as uint16_t little-endian.
-  memcpy(&(analogInBuffer[0]), &(analogValues[0]), 2);
-  memcpy(&(analogInBuffer[2]), &(analogValues[1]), 2);
-  memcpy(&(analogInBuffer[4]), &(analogValues[2]), 2);
-  uBit.ble->gattServer().write(
-      analogInCharHandle,
-      (uint8_t *)&analogInBuffer,
-      sizeof(analogInBuffer) / sizeof(analogInBuffer[0]));
 }
 
 /**
