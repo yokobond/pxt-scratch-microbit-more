@@ -488,9 +488,16 @@ void MbitMoreService::updateAnalogValues()
 {
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
+    int value;
     if (uBit.io.pin[analogIn[i]].isInput())
     {
-      analogValues[i] = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      if (value == 255)
+      {
+        // Read again cause it may fail to read correct value.
+        value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      }
+      analogValues[i] = value;
     }
   }
 
