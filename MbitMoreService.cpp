@@ -21,8 +21,6 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
     uBit.compass.calibrate();
   }
 
-  initConfiguration();
-
   // Create the data structures that represent each of our characteristics in Soft Device.
   GattCharacteristic txCharacteristic(
       MBIT_MORE_BASIC_TX,
@@ -728,7 +726,6 @@ void MbitMoreService::notify()
   }
   else
   {
-    initConfiguration();
     displayFriendlyName();
   }
 }
@@ -758,6 +755,7 @@ int MbitMoreService::getSharedData(int index)
 void MbitMoreService::onBLEConnected(MicroBitEvent _e)
 {
   uBit.display.stopAnimation(); // To stop display friendly name.
+  initConfiguration();
 }
 
 /**
