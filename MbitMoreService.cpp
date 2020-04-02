@@ -239,6 +239,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       }
       else if (data[1] == MBitMorePinCommand::PIN_SERVO)
       {
+        int pinIndex = (int)data[2];
         // angle is read as uint16_t little-endian.
         uint16_t angle;
         memcpy(&angle, &(data[3]), 2);
@@ -248,7 +249,18 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
         // center is read as uint16_t little-endian.
         uint16_t center;
         memcpy(&center, &(data[7]), 2);
-        setServoValue((int)data[2], (int)angle, (int)range, (int)center);
+        if (range == 0)
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle);
+        }
+        else if (center == 0)
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle, range);
+        }
+        else
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle, range, center);
+        }
       }
       else if (data[1] == MBitMorePinCommand::PIN_EVENT)
       {
