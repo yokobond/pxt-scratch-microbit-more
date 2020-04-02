@@ -21,14 +21,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
     uBit.compass.calibrate();
   }
 
-  // Initialize pin configuration.
-  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
-  {
-    setPullMode(gpio[i], PinMode::PullUp);
-  }
-
-  // Initialize microbit more protocol.
-  mbitMoreProtocol = 0;
+  initConfiguration();
 
   // Create the data structures that represent each of our characteristics in Soft Device.
   GattCharacteristic txCharacteristic(
@@ -127,7 +120,6 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
 
   uBit.ble->addService(mbitMoreService);
 
-  analogInCharHandle = analogInChar->getValueHandle();
   eventCharHandle = eventChar->getValueHandle();
   ioCharHandle = ioChar->getValueHandle();
   sensorsCharHandle = sensorsChar->getValueHandle();
@@ -151,13 +143,31 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   uBit.messageBus.listen(MICROBIT_ID_GESTURE, MICROBIT_EVT_ANY, this, &MbitMoreService::onGestureChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
+void MbitMoreService::initConfiguration()
+{
+  // Initialize pin configuration.
+  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
+  {
+    setPullMode(gpio[i], PinMode::PullUp);
+  }
+
+  // Initialize microbit more protocol.
+  mbitMoreProtocol = 0;
+
+  // Initialize data format.
+  txDataFormat = 1;
+}
+
 /**
   * Callback. Invoked when AnalogIn is read via BLE.
   */
 void MbitMoreService::onReadAnalogIn(GattReadAuthCallbackParams *authParams)
 {
   updateAnalogValues();
-  writeAnalogIn();
+  // analog value (0 to 1023) is sent as uint16_t little-endian.
+  memcpy(&(analogInBuffer[0]), &(analogValues[0]), 2);
+  memcpy(&(analogInBuffer[2]), &(analogValues[1]), 2);
+  memcpy(&(analogInBuffer[4]), &(analogValues[2]), 2);
   authParams->data = (uint8_t *)&analogInBuffer;
   authParams->offset = 0;
   authParams->len = sizeof(analogInBuffer) / sizeof(analogInBuffer[0]);
@@ -192,95 +202,120 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
         }
       }
     }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_UP)
+    else if (data[0] == ScratchBLECommand::CMD_PIN)
     {
-      setPullMode(data[1], PinMode::PullUp);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_PULL_DOWN)
-    {
-      setPullMode(data[1], PinMode::PullDown);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_TOUCH)
-    {
-      setPinModeTouch(data[1]);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_OUTPUT)
-    {
-      setDigitalValue(data[1], data[2]);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_PWM)
-    {
-      // value is read as uint16_t little-endian.
-      int value;
-      memcpy(&value, &(data[2]), 2);
-      setAnalogValue(data[1], value);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PIN_SERVO)
-    {
-      // angle is read as uint16_t little-endian.
-      uint16_t angle;
-      memcpy(&angle, &(data[2]), 2);
-      // range is read as uint16_t little-endian.
-      uint16_t range;
-      memcpy(&range, &(data[4]), 2);
-      // center is read as uint16_t little-endian.
-      uint16_t center;
-      memcpy(&center, &(data[6]), 2);
-      setServoValue((int)data[1], (int)angle, (int)range, (int)center);
-    }
-    else if (data[0] == ScratchBLECommand::CMD_SHARED_DATA_SET)
-    {
-      // value is read as int16_t little-endian.
-      int16_t value;
-      memcpy(&value, &(data[2]), 2);
-      sharedData[data[1]] = value;
-    }
-    else if (data[0] == ScratchBLECommand::CMD_PROTOCOL_SET)
-    {
-      mbitMoreProtocol = data[1];
-    }
-    else if (data[0] == ScratchBLECommand::CMD_EVENT_SET)
-    {
-      int componentID; // ID of the MicroBit Component that generated the event.
-      switch (data[1]) // Index of pin to set event.
+      if (data[1] == MBitMorePinCommand::PIN_PULL)
       {
-      case 0:
-        componentID = MICROBIT_ID_IO_P0;
-        break;
-      case 1:
-        componentID = MICROBIT_ID_IO_P1;
-        break;
-      case 2:
-        componentID = MICROBIT_ID_IO_P2;
-        break;
-      case 8:
-        componentID = MICROBIT_ID_IO_P8;
-        break;
-      case 13:
-        componentID = MICROBIT_ID_IO_P13;
-        break;
-      case 14:
-        componentID = MICROBIT_ID_IO_P14;
-        break;
-      case 15:
-        componentID = MICROBIT_ID_IO_P15;
-        break;
-      case 16:
-        componentID = MICROBIT_ID_IO_P16;
-        break;
+        switch (data[3])
+        {
+        case MBitMorePinMode::PullNone:
+          setPullMode(data[2], PinMode::PullNone);
+          break;
+        case MBitMorePinMode::PullUp:
+          setPullMode(data[2], PinMode::PullUp);
+          break;
+        case MBitMorePinMode::PullDown:
+          setPullMode(data[2], PinMode::PullDown);
+          break;
 
-      default:
-        return;
+        default:
+          break;
+        }
       }
-      if (data[2] == MICROBIT_PIN_EVENT_NONE)
+      else if (data[1] == MBitMorePinCommand::PIN_TOUCH)
       {
-        uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
-        return;
+        setPinModeTouch(data[2]);
       }
-      uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
-      uBit.io.pin[data[1]].getDigitalValue(); // Configure pin as digital input.
-      uBit.io.pin[data[1]].eventOn((int)data[2]);
+      else if (data[1] == MBitMorePinCommand::PIN_OUTPUT)
+      {
+        setDigitalValue(data[2], data[3]);
+      }
+      else if (data[1] == MBitMorePinCommand::PIN_PWM)
+      {
+        // value is read as uint16_t little-endian.
+        int value;
+        memcpy(&value, &(data[3]), 2);
+        setAnalogValue(data[2], value);
+      }
+      else if (data[1] == MBitMorePinCommand::PIN_SERVO)
+      {
+        int pinIndex = (int)data[2];
+        // angle is read as uint16_t little-endian.
+        uint16_t angle;
+        memcpy(&angle, &(data[3]), 2);
+        // range is read as uint16_t little-endian.
+        uint16_t range;
+        memcpy(&range, &(data[5]), 2);
+        // center is read as uint16_t little-endian.
+        uint16_t center;
+        memcpy(&center, &(data[7]), 2);
+        if (range == 0)
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle);
+        }
+        else if (center == 0)
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle, range);
+        }
+        else
+        {
+          uBit.io.pin[pinIndex].setServoValue(angle, range, center);
+        }
+      }
+      else if (data[1] == MBitMorePinCommand::PIN_EVENT)
+      {
+        int componentID; // ID of the MicroBit Component that generated the event.
+        switch (data[2]) // Index of pin to set event.
+        {
+        case 0:
+          componentID = MICROBIT_ID_IO_P0;
+          break;
+        case 1:
+          componentID = MICROBIT_ID_IO_P1;
+          break;
+        case 2:
+          componentID = MICROBIT_ID_IO_P2;
+          break;
+        case 8:
+          componentID = MICROBIT_ID_IO_P8;
+          break;
+        case 13:
+          componentID = MICROBIT_ID_IO_P13;
+          break;
+        case 14:
+          componentID = MICROBIT_ID_IO_P14;
+          break;
+        case 15:
+          componentID = MICROBIT_ID_IO_P15;
+          break;
+        case 16:
+          componentID = MICROBIT_ID_IO_P16;
+          break;
+
+        default:
+          return;
+        }
+        if (data[3] == MICROBIT_PIN_EVENT_NONE)
+        {
+          uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
+          return;
+        }
+        uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+        uBit.io.pin[data[2]].getDigitalValue(); // Configure pin as digital input.
+        uBit.io.pin[data[2]].eventOn((int)data[3]);
+      }
     }
+  }
+  else if (data[0] == ScratchBLECommand::CMD_SHARED_DATA)
+  {
+    // value is read as int16_t little-endian.
+    int16_t value;
+    memcpy(&value, &(data[2]), 2);
+    sharedData[data[1]] = value;
+  }
+  else if (data[0] == ScratchBLECommand::CMD_PROTOCOL)
+  {
+    mbitMoreProtocol = data[1];
   }
 }
 
@@ -465,10 +500,16 @@ void MbitMoreService::updateAnalogValues()
 {
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
+    int value;
     if (uBit.io.pin[analogIn[i]].isInput())
     {
-      uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
-      analogValues[i] = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      if (value == 255)
+      {
+        // Read again cause it may fail to read correct value.
+        value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
+      }
+      analogValues[i] = value;
     }
   }
 
@@ -598,21 +639,6 @@ void MbitMoreService::composeTxBuffer03()
 }
 
 /**
-  * Write analog input values on BLE.
-  */
-void MbitMoreService::writeAnalogIn()
-{
-  // analog value (0 to 1023) is sent as uint16_t little-endian.
-  memcpy(&(analogInBuffer[0]), &(analogValues[0]), 2);
-  memcpy(&(analogInBuffer[2]), &(analogValues[1]), 2);
-  memcpy(&(analogInBuffer[4]), &(analogValues[2]), 2);
-  uBit.ble->gattServer().write(
-      analogInCharHandle,
-      (uint8_t *)&analogInBuffer,
-      sizeof(analogInBuffer) / sizeof(analogInBuffer[0]));
-}
-
-/**
   * Notify shared data to Scratch3
   */
 void MbitMoreService::notifySharedData()
@@ -692,8 +718,7 @@ void MbitMoreService::notify()
   }
   else
   {
-    txDataFormat = 1;
-    mbitMoreProtocol = 0;
+    initConfiguration();
     displayFriendlyName();
   }
 }
