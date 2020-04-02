@@ -149,6 +149,7 @@ void MbitMoreService::initConfiguration()
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
     setPullMode(gpio[i], PinMode::PullUp);
+    listenPinEventOn(gpio[i], MICROBIT_PIN_EVENT_NONE);
   }
 
   // Initialize microbit more protocol.
@@ -264,45 +265,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       }
       else if (data[1] == MBitMorePinCommand::PIN_EVENT)
       {
-        int componentID; // ID of the MicroBit Component that generated the event.
-        switch (data[2]) // Index of pin to set event.
-        {
-        case 0:
-          componentID = MICROBIT_ID_IO_P0;
-          break;
-        case 1:
-          componentID = MICROBIT_ID_IO_P1;
-          break;
-        case 2:
-          componentID = MICROBIT_ID_IO_P2;
-          break;
-        case 8:
-          componentID = MICROBIT_ID_IO_P8;
-          break;
-        case 13:
-          componentID = MICROBIT_ID_IO_P13;
-          break;
-        case 14:
-          componentID = MICROBIT_ID_IO_P14;
-          break;
-        case 15:
-          componentID = MICROBIT_ID_IO_P15;
-          break;
-        case 16:
-          componentID = MICROBIT_ID_IO_P16;
-          break;
-
-        default:
-          return;
-        }
-        if (data[3] == MICROBIT_PIN_EVENT_NONE)
-        {
-          uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
-          return;
-        }
-        uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
-        uBit.io.pin[data[2]].getDigitalValue(); // Configure pin as digital input.
-        uBit.io.pin[data[2]].eventOn((int)data[3]);
+        listenPinEventOn((int)data[2], (int)data[3]);
       }
     }
   }
@@ -317,6 +280,53 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
   {
     mbitMoreProtocol = data[1];
   }
+}
+
+/**
+ * Make it listen events of the event type on the pin.
+ * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
+ */
+void MbitMoreService::listenPinEventOn(int pinIndex, int eventType)
+{
+  int componentID;  // ID of the MicroBit Component that generated the event.
+  switch (pinIndex) // Index of pin to set event.
+  {
+  case 0:
+    componentID = MICROBIT_ID_IO_P0;
+    break;
+  case 1:
+    componentID = MICROBIT_ID_IO_P1;
+    break;
+  case 2:
+    componentID = MICROBIT_ID_IO_P2;
+    break;
+  case 8:
+    componentID = MICROBIT_ID_IO_P8;
+    break;
+  case 13:
+    componentID = MICROBIT_ID_IO_P13;
+    break;
+  case 14:
+    componentID = MICROBIT_ID_IO_P14;
+    break;
+  case 15:
+    componentID = MICROBIT_ID_IO_P15;
+    break;
+  case 16:
+    componentID = MICROBIT_ID_IO_P16;
+    break;
+
+  default:
+    return;
+  }
+  if (eventType == MICROBIT_PIN_EVENT_NONE)
+  {
+    uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
+    return;
+  }
+  uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+  uBit.io.pin[pinIndex].getDigitalValue(); // Configure pin as digital input.
+  uBit.io.pin[pinIndex].eventOn(eventType);
 }
 
 /**

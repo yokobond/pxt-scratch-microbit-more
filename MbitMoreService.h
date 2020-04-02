@@ -189,6 +189,11 @@ private:
    */
   PinMode pullMode[21];
 
+  /**
+   * Make it listen events of the event type on the pin.
+   * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
+   */
+  void listenPinEventOn(int pinIndex, int eventType);
   void setPullMode(int pinIndex, PinMode pull);
   void setDigitalValue(int pinIndex, int value);
   void setAnalogValue(int pinIndex, int value);
