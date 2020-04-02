@@ -491,7 +491,7 @@ void MbitMoreService::updateDigitalValues()
     if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(pullMode[gpio[i]]) == 1 ? 0 : 1)) << gpio[i]);
+          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue() == 1 ? 0 : 1)) << gpio[i]);
     }
   }
 }
