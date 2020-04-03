@@ -478,7 +478,12 @@ void MbitMoreService::updateGesture()
   lastAcc[0] = uBit.accelerometer.getX();
   lastAcc[1] = uBit.accelerometer.getY();
   lastAcc[2] = uBit.accelerometer.getZ();
-  int threshold = 100;
+  if ((gesture >> 2) & 1)
+  {
+    gesture = gesture ^ (1 << 2);
+    return;
+  }
+  int threshold = 50;
   if ((abs(lastAcc[0] - old[0]) > threshold) || (abs(lastAcc[1] - old[1]) > threshold) || (abs(lastAcc[2] - old[2]) > threshold))
   {
     // Moved
@@ -488,7 +493,7 @@ void MbitMoreService::updateGesture()
 
 void MbitMoreService::resetGesture()
 {
-  gesture = 0;
+  gesture = gesture & (1 << 2); // Save moved state to detect continuous movement.
 }
 
 void MbitMoreService::updateDigitalValues()
