@@ -16,7 +16,8 @@ declare namespace MbitMore {
 
 
     /**
-     * Current mode of all pins.
+     * Make it listen events of the event type on the pin.
+     * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
      */
 
     declare const enum ScratchBLECommand
