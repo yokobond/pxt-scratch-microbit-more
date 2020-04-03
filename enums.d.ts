@@ -33,12 +33,12 @@ declare namespace MbitMore {
 
     declare const enum MBitMorePinCommand
     {
-    PIN_OUTPUT = 0x01,
-    PIN_PWM = 0x02,
-    PIN_SERVO = 0x03,
-    PIN_PULL = 0x04,
-    PIN_EVENT = 0x05,
-    PIN_TOUCH = 0x06,
+    SET_OUTPUT = 0x01,
+    SET_PWM = 0x02,
+    SET_SERVO = 0x03,
+    SET_PULL = 0x04,
+    SET_EVENT = 0x05,
+    SET_TOUCH = 0x06,
     }
 
 

@@ -203,7 +203,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
     }
     else if (data[0] == ScratchBLECommand::CMD_PIN)
     {
-      if (data[1] == MBitMorePinCommand::PIN_PULL)
+      if (data[1] == MBitMorePinCommand::SET_PULL)
       {
         switch (data[3])
         {
@@ -221,22 +221,22 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
           break;
         }
       }
-      else if (data[1] == MBitMorePinCommand::PIN_TOUCH)
+      else if (data[1] == MBitMorePinCommand::SET_TOUCH)
       {
         setPinModeTouch(data[2]);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_OUTPUT)
+      else if (data[1] == MBitMorePinCommand::SET_OUTPUT)
       {
         setDigitalValue(data[2], data[3]);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_PWM)
+      else if (data[1] == MBitMorePinCommand::SET_PWM)
       {
         // value is read as uint16_t little-endian.
         int value;
         memcpy(&value, &(data[3]), 2);
         setAnalogValue(data[2], value);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_SERVO)
+      else if (data[1] == MBitMorePinCommand::SET_SERVO)
       {
         int pinIndex = (int)data[2];
         // angle is read as uint16_t little-endian.
@@ -261,7 +261,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
           uBit.io.pin[pinIndex].setServoValue(angle, range, center);
         }
       }
-      else if (data[1] == MBitMorePinCommand::PIN_EVENT)
+      else if (data[1] == MBitMorePinCommand::SET_EVENT)
       {
         listenPinEventOn((int)data[2], (int)data[3]);
       }
