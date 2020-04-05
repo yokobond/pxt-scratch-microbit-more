@@ -516,6 +516,7 @@ void MbitMoreService::updateAnalogValues()
     int value;
     if (uBit.io.pin[analogIn[i]].isInput())
     {
+      uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
       value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
       if (value == 255)
       {
@@ -523,6 +524,7 @@ void MbitMoreService::updateAnalogValues()
         value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
       }
       analogValues[i] = value;
+      setPullMode(analogIn[i], pullMode[analogIn[i]]);
     }
   }
 
