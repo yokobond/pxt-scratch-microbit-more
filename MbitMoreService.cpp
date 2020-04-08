@@ -504,7 +504,7 @@ void MbitMoreService::updateDigitalValues()
     if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue() == 1 ? 0 : 1)) << gpio[i]);
+          digitalValues | (uBit.io.pin[gpio[i]].getDigitalValue() << gpio[i]);
     }
   }
 }
@@ -595,9 +595,9 @@ void MbitMoreService::composeDefaultData(uint8_t *buff)
   buff[3] = tiltY & 0xFF;
   buff[4] = (uint8_t)buttonAState;
   buff[5] = (uint8_t)buttonBState;
-  buff[6] = (uint8_t)((digitalValues >> 0) & 1);
-  buff[7] = (uint8_t)((digitalValues >> 1) & 1);
-  buff[8] = (uint8_t)((digitalValues >> 2) & 1);
+  buff[6] = (uint8_t)(((digitalValues >> 0) & 1) ^ 1);
+  buff[7] = (uint8_t)(((digitalValues >> 1) & 1) ^ 1);
+  buff[8] = (uint8_t)(((digitalValues >> 2) & 1) ^ 1);
   buff[9] = (uint8_t)gesture;
 }
 
