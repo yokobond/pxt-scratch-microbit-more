@@ -7,10 +7,9 @@ declare namespace MbitMore {
 
     /**
      * Starts a Scratch extension service.
-     * The handler can call ``setMbitMoreSharedData`` to send any data to Scratch.
      */
     //% shim=MbitMore::startMbitMoreService
-    function startMbitMoreService(handler: () => void): void;
+    function startMbitMoreService(): void;
 
     /**
      * Set shared data value.
