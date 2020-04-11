@@ -18,7 +18,6 @@ enum SharedDataIndex {
 //% color=#FF9900 weight=95 icon="\uf1b0"
 namespace MbitMore {
     MbitMoreService* _pService = NULL;
-    Action _handler;
 
     void update() {
         while (NULL != _pService) {
@@ -29,8 +28,6 @@ namespace MbitMore {
 
     void notifyScratch() {
         while (NULL != _pService) {
-            // run actions in the loop
-            pxt::runAction0(_handler);
             // notyfy data to Scratch
             _pService->notify();
             fiber_sleep(NOTIFY_PERIOD);
@@ -39,15 +36,12 @@ namespace MbitMore {
 
     /**
     * Starts a Scratch extension service.
-    * The handler can call ``setMbitMoreSharedData`` to send any data to Scratch.
     */
     //%
-    void startMbitMoreService(Action handler) {
+    void startMbitMoreService() {
         if (NULL != _pService) return;
 
         _pService = new MbitMoreService(uBit);
-        _handler = handler;
-        pxt::incr(_handler);
         create_fiber(update);
         create_fiber(notifyScratch);
     }

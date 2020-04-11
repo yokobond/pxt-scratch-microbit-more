@@ -3,13 +3,12 @@ namespace MbitMore {
     let sharedData: number[] = [0, 0, 0, 0];
 
     /**
-    * Starts a Scratch extension service.
-    * The handler can call ``setscratchMoreSharedData`` to send any data to Scratch.
+    * Starts BLE services for Scratch Microbit-More extension.
     */
-    //% blockId=scratchmore_startMbitMoreService block="Scratch More service"
+    //% blockId=MbitMore_startMbitMoreService block="start Microbit-More service"
     //% shim=MbitMore::startMbitMoreService
-    export function startService(handler: Action):void {
-        console.log("Scratch More started");
+    export function startService():void {
+        console.log("Microbit-More started");
     }
 
     /**
@@ -17,7 +16,7 @@ namespace MbitMore {
      * @param index - Index of shared data.
      * @param value - New value of shared data.
      */
-    //% blockId=scratchmore_setMbitMoreSharedData block="set shared %index to %value"
+    //% blockId=MbitMore_setMbitMoreSharedData block="set shared %index to %value"
     //% shim=MbitMore::setMbitMoreSharedData
     export function setSharedData(index: SharedDataIndex, value: number):void {
         sharedData[index] = value;
@@ -26,7 +25,7 @@ namespace MbitMore {
     /**
      * Get value of the shared data.
      */
-    //% blockId=scratchmore_getMbitMoreSharedData block="value of shared %index"
+    //% blockId=MbitMore_getMbitMoreSharedData block="value of shared %index"
     //% shim=MbitMore::getMbitMoreSharedData
     export function getSharedData(index: SharedDataIndex):number {
         return sharedData[index];

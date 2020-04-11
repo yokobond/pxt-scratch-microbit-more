@@ -1,3 +1,1 @@
-MbitMore.startMbitMoreService(function () {
-
-})
+MbitMore.startMbitMoreService()

@@ -21,8 +21,6 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
     uBit.compass.calibrate();
   }
 
-  initConfiguration();
-
   // Create the data structures that represent each of our characteristics in Soft Device.
   GattCharacteristic txCharacteristic(
       MBIT_MORE_BASIC_TX,
@@ -149,6 +147,7 @@ void MbitMoreService::initConfiguration()
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
     setPullMode(gpio[i], PinMode::PullUp);
+    listenPinEventOn(gpio[i], MICROBIT_PIN_EVENT_NONE);
   }
 
   // Initialize microbit more protocol.
@@ -204,7 +203,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
     }
     else if (data[0] == ScratchBLECommand::CMD_PIN)
     {
-      if (data[1] == MBitMorePinCommand::PIN_PULL)
+      if (data[1] == MBitMorePinCommand::SET_PULL)
       {
         switch (data[3])
         {
@@ -222,22 +221,22 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
           break;
         }
       }
-      else if (data[1] == MBitMorePinCommand::PIN_TOUCH)
+      else if (data[1] == MBitMorePinCommand::SET_TOUCH)
       {
         setPinModeTouch(data[2]);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_OUTPUT)
+      else if (data[1] == MBitMorePinCommand::SET_OUTPUT)
       {
         setDigitalValue(data[2], data[3]);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_PWM)
+      else if (data[1] == MBitMorePinCommand::SET_PWM)
       {
         // value is read as uint16_t little-endian.
         int value;
         memcpy(&value, &(data[3]), 2);
         setAnalogValue(data[2], value);
       }
-      else if (data[1] == MBitMorePinCommand::PIN_SERVO)
+      else if (data[1] == MBitMorePinCommand::SET_SERVO)
       {
         int pinIndex = (int)data[2];
         // angle is read as uint16_t little-endian.
@@ -262,47 +261,9 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
           uBit.io.pin[pinIndex].setServoValue(angle, range, center);
         }
       }
-      else if (data[1] == MBitMorePinCommand::PIN_EVENT)
+      else if (data[1] == MBitMorePinCommand::SET_EVENT)
       {
-        int componentID; // ID of the MicroBit Component that generated the event.
-        switch (data[2]) // Index of pin to set event.
-        {
-        case 0:
-          componentID = MICROBIT_ID_IO_P0;
-          break;
-        case 1:
-          componentID = MICROBIT_ID_IO_P1;
-          break;
-        case 2:
-          componentID = MICROBIT_ID_IO_P2;
-          break;
-        case 8:
-          componentID = MICROBIT_ID_IO_P8;
-          break;
-        case 13:
-          componentID = MICROBIT_ID_IO_P13;
-          break;
-        case 14:
-          componentID = MICROBIT_ID_IO_P14;
-          break;
-        case 15:
-          componentID = MICROBIT_ID_IO_P15;
-          break;
-        case 16:
-          componentID = MICROBIT_ID_IO_P16;
-          break;
-
-        default:
-          return;
-        }
-        if (data[3] == MICROBIT_PIN_EVENT_NONE)
-        {
-          uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
-          return;
-        }
-        uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
-        uBit.io.pin[data[2]].getDigitalValue(); // Configure pin as digital input.
-        uBit.io.pin[data[2]].eventOn((int)data[3]);
+        listenPinEventOn((int)data[2], (int)data[3]);
       }
     }
   }
@@ -317,6 +278,53 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
   {
     mbitMoreProtocol = data[1];
   }
+}
+
+/**
+ * Make it listen events of the event type on the pin.
+ * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
+ */
+void MbitMoreService::listenPinEventOn(int pinIndex, int eventType)
+{
+  int componentID;  // ID of the MicroBit Component that generated the event.
+  switch (pinIndex) // Index of pin to set event.
+  {
+  case 0:
+    componentID = MICROBIT_ID_IO_P0;
+    break;
+  case 1:
+    componentID = MICROBIT_ID_IO_P1;
+    break;
+  case 2:
+    componentID = MICROBIT_ID_IO_P2;
+    break;
+  case 8:
+    componentID = MICROBIT_ID_IO_P8;
+    break;
+  case 13:
+    componentID = MICROBIT_ID_IO_P13;
+    break;
+  case 14:
+    componentID = MICROBIT_ID_IO_P14;
+    break;
+  case 15:
+    componentID = MICROBIT_ID_IO_P15;
+    break;
+  case 16:
+    componentID = MICROBIT_ID_IO_P16;
+    break;
+
+  default:
+    return;
+  }
+  if (eventType == MICROBIT_PIN_EVENT_NONE)
+  {
+    uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
+    return;
+  }
+  uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+  uBit.io.pin[pinIndex].getDigitalValue(); // Configure pin as digital input.
+  uBit.io.pin[pinIndex].eventOn(eventType);
 }
 
 /**
@@ -470,7 +478,12 @@ void MbitMoreService::updateGesture()
   lastAcc[0] = uBit.accelerometer.getX();
   lastAcc[1] = uBit.accelerometer.getY();
   lastAcc[2] = uBit.accelerometer.getZ();
-  int threshold = 100;
+  if ((gesture >> 2) & 1)
+  {
+    gesture = gesture ^ (1 << 2);
+    return;
+  }
+  int threshold = 50;
   if ((abs(lastAcc[0] - old[0]) > threshold) || (abs(lastAcc[1] - old[1]) > threshold) || (abs(lastAcc[2] - old[2]) > threshold))
   {
     // Moved
@@ -480,7 +493,7 @@ void MbitMoreService::updateGesture()
 
 void MbitMoreService::resetGesture()
 {
-  gesture = 0;
+  gesture = gesture & (1 << 2); // Save moved state to detect continuous movement.
 }
 
 void MbitMoreService::updateDigitalValues()
@@ -491,7 +504,7 @@ void MbitMoreService::updateDigitalValues()
     if (uBit.io.pin[gpio[i]].isInput())
     {
       digitalValues =
-          digitalValues | (((uBit.io.pin[gpio[i]].getDigitalValue(pullMode[gpio[i]]) == 1 ? 0 : 1)) << gpio[i]);
+          digitalValues | (uBit.io.pin[gpio[i]].getDigitalValue() << gpio[i]);
     }
   }
 }
@@ -503,6 +516,7 @@ void MbitMoreService::updateAnalogValues()
     int value;
     if (uBit.io.pin[analogIn[i]].isInput())
     {
+      uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
       value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
       if (value == 255)
       {
@@ -510,6 +524,7 @@ void MbitMoreService::updateAnalogValues()
         value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
       }
       analogValues[i] = value;
+      setPullMode(analogIn[i], pullMode[analogIn[i]]);
     }
   }
 
@@ -580,9 +595,9 @@ void MbitMoreService::composeDefaultData(uint8_t *buff)
   buff[3] = tiltY & 0xFF;
   buff[4] = (uint8_t)buttonAState;
   buff[5] = (uint8_t)buttonBState;
-  buff[6] = (uint8_t)((digitalValues >> 0) & 1);
-  buff[7] = (uint8_t)((digitalValues >> 1) & 1);
-  buff[8] = (uint8_t)((digitalValues >> 2) & 1);
+  buff[6] = (uint8_t)(((digitalValues >> 0) & 1) ^ 1);
+  buff[7] = (uint8_t)(((digitalValues >> 1) & 1) ^ 1);
+  buff[8] = (uint8_t)(((digitalValues >> 2) & 1) ^ 1);
   buff[9] = (uint8_t)gesture;
 }
 
@@ -718,7 +733,6 @@ void MbitMoreService::notify()
   }
   else
   {
-    initConfiguration();
     displayFriendlyName();
   }
 }
@@ -748,6 +762,7 @@ int MbitMoreService::getSharedData(int index)
 void MbitMoreService::onBLEConnected(MicroBitEvent _e)
 {
   uBit.display.stopAnimation(); // To stop display friendly name.
+  initConfiguration();
 }
 
 /**
