@@ -50,11 +50,6 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   txCharacteristicHandle = txCharacteristic.getValueHandle();
   rxCharacteristicHandle = rxCharacteristic.getValueHandle();
 
-  // Write initial value.
-  txBuffer01[DATA_FORMAT_INDEX] = MBitMoreDataFormat::MIX_01;
-  txBuffer02[DATA_FORMAT_INDEX] = MBitMoreDataFormat::MIX_02;
-  txBuffer03[DATA_FORMAT_INDEX] = MBitMoreDataFormat::MIX_03;
-
   uBit.ble->gattServer().write(
       txCharacteristicHandle,
       (uint8_t *)&txData,
@@ -152,9 +147,6 @@ void MbitMoreService::initConfiguration()
 
   // Initialize microbit more protocol.
   mbitMoreProtocol = 0;
-
-  // Initialize data format.
-  txDataFormat = 1;
 }
 
 /**
@@ -601,58 +593,6 @@ void MbitMoreService::composeDefaultData(uint8_t *buff)
   buff[9] = (uint8_t)gesture;
 }
 
-void MbitMoreService::composeTxBuffer01()
-{
-  composeDefaultData(txBuffer01);
-
-  updateAnalogValues();
-  // analog value (0 to 1024) is sent as uint16_t little-endian.
-  memcpy(&(txBuffer01[10]), &(analogValues[0]), 2);
-  memcpy(&(txBuffer01[12]), &(analogValues[1]), 2);
-  memcpy(&(txBuffer01[14]), &(analogValues[2]), 2);
-
-  updateMagnetometer();
-  // compassHeading angle (0 - 359) is sent as uint16_t little-endian.
-  uint16_t heading = (uint16_t)normalizeCompassHeading(compassHeading);
-  memcpy(&(txBuffer01[16]), &heading, 2);
-
-  updateLightSensor();
-  // level of light amount (0-255) is sent as uint8_t.
-  txBuffer01[18] = (uint8_t)lightLevel;
-}
-
-void MbitMoreService::composeTxBuffer02()
-{
-  composeDefaultData(txBuffer02);
-
-  txBuffer02[18] = 0;
-  for (size_t i = 0; i < 8; i++)
-  {
-    txBuffer02[18] = txBuffer02[18] | (uint8_t)(((digitalValues >> gpio[i]) & 1) << i);
-  }
-}
-
-void MbitMoreService::composeTxBuffer03()
-{
-  composeDefaultData(txBuffer03);
-
-  updateMagnetometer();
-  // Magnetic field strength [micro teslas] is sent as uint16_t little-endian in 03:10.
-  uint16_t magStrength = (uint16_t)(uBit.compass.getFieldStrength() / 1000);
-  memcpy(&(txBuffer03[10]), &magStrength, 2);
-
-  int16_t data;
-  // Acceleration X [milli-g] is sent as int16_t little-endian in 03:12.
-  data = (int16_t)(acceleration[0]);
-  memcpy(&(txBuffer03[12]), &data, 2);
-  // Acceleration Y [milli-g] is sent as int16_t little-endian in 03:14.
-  data = (int16_t)(acceleration[1]);
-  memcpy(&(txBuffer03[14]), &data, 2);
-  // Acceleration Z [milli-g] is sent as int16_t little-endian in 03:16.
-  data = (int16_t)(acceleration[2]);
-  memcpy(&(txBuffer03[16]), &data, 2);
-}
-
 /**
   * Notify shared data to Scratch3
   */
@@ -688,47 +628,7 @@ void MbitMoreService::notify()
   if (uBit.ble->gap().getState().connected)
   {
     updateGesture();
-    if (mbitMoreProtocol == 0)
-    {
-      updateDigitalValues();
-      updateAccelerometer();
-      switch (txDataFormat)
-      {
-      case 1:
-        composeTxBuffer01();
-        uBit.ble->gattServer().notify(
-            txCharacteristicHandle,
-            (uint8_t *)&txBuffer01,
-            sizeof(txBuffer01) / sizeof(txBuffer01[0]));
-        break;
-
-      case 2:
-        composeTxBuffer02();
-        uBit.ble->gattServer().notify(
-            txCharacteristicHandle,
-            (uint8_t *)&txBuffer02,
-            sizeof(txBuffer02) / sizeof(txBuffer02[0]));
-        break;
-
-      case 3:
-        composeTxBuffer03();
-        uBit.ble->gattServer().notify(
-            txCharacteristicHandle,
-            (uint8_t *)&txBuffer03,
-            sizeof(txBuffer03) / sizeof(txBuffer03[0]));
-        break;
-
-      default:
-        break;
-      }
-      txDataFormat++;
-      if (txDataFormat > 3)
-        txDataFormat = 1;
-    }
-    else
-    {
-      notifyDefaultData();
-    }
+    notifyDefaultData();
     resetGesture();
   }
   else
@@ -745,7 +645,6 @@ void MbitMoreService::setSharedData(int index, int value)
 {
   // value (-32768 to 32767) is sent as int16_t little-endian.
   int16_t data = (int16_t)value;
-  memcpy(&(txBuffer02[10 + (index * 2)]), &data, 2);
   sharedData[index] = data;
   notifySharedData();
 }
@@ -849,6 +748,9 @@ void MbitMoreService::writeSensors()
 
   // Light sensor
   sensorsBuffer[18] = (uint8_t)lightLevel;
+
+  // Temperature
+  sensorsBuffer[19] = (uint8_t)(uBit.thermometer.getTemperature() + 128);
 
   uBit.ble->gattServer().write(
       sensorsCharHandle,
