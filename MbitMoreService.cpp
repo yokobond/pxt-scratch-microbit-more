@@ -749,6 +749,9 @@ void MbitMoreService::writeSensors()
   // Light sensor
   sensorsBuffer[18] = (uint8_t)lightLevel;
 
+  // Temperature
+  sensorsBuffer[19] = (uint8_t)(uBit.thermometer.getTemperature() + 128);
+
   uBit.ble->gattServer().write(
       sensorsCharHandle,
       (uint8_t *)&sensorsBuffer,
