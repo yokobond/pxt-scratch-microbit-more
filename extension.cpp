@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "MbitMoreService.h"
 
-#define UPDATE_PERIOD 29
+#define UPDATE_PERIOD 11
 #define NOTIFY_PERIOD 101
 
 enum SharedDataIndex {
