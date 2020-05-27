@@ -258,17 +258,17 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
         listenPinEventOn((int)data[2], (int)data[3]);
       }
     }
-  }
-  else if (data[0] == ScratchBLECommand::CMD_SHARED_DATA)
-  {
-    // value is read as int16_t little-endian.
-    int16_t value;
-    memcpy(&value, &(data[2]), 2);
-    sharedData[data[1]] = value;
-  }
-  else if (data[0] == ScratchBLECommand::CMD_PROTOCOL)
-  {
-    mbitMoreProtocol = data[1];
+    else if (data[0] == ScratchBLECommand::CMD_SHARED_DATA)
+    {
+      // value is read as int16_t little-endian.
+      int16_t value;
+      memcpy(&value, &(data[2]), 2);
+      sharedData[data[1]] = value;
+    }
+    else if (data[0] == ScratchBLECommand::CMD_PROTOCOL)
+    {
+      mbitMoreProtocol = data[1];
+    }
   }
 }
 
