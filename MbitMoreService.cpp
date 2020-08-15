@@ -6,6 +6,7 @@
 
 int gpio[] = {0, 1, 2, 8, 13, 14, 15, 16};
 int analogIn[] = {0, 1, 2};
+int digitalIn[] = {0, 1, 2}; // PullUp at connected to be same behaviour as the standard extension.
 
 /**
   * Constructor.
@@ -139,10 +140,9 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
 void MbitMoreService::initConfiguration()
 {
   // Initialize pin configuration.
-  for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
+  for (size_t i = 0; i < sizeof(digitalIn) / sizeof(digitalIn[0]); i++)
   {
-    setPullMode(gpio[i], PinMode::PullUp);
-    listenPinEventOn(gpio[i], MICROBIT_PIN_EVENT_NONE);
+    setPullMode(digitalIn[i], PinMode::PullUp);
   }
 
   // Initialize microbit more protocol.
@@ -493,10 +493,13 @@ void MbitMoreService::updateDigitalValues()
   digitalValues = 0;
   for (size_t i = 0; i < sizeof(gpio) / sizeof(gpio[0]); i++)
   {
-    if (uBit.io.pin[gpio[i]].isInput())
+    if (uBit.io.pin[gpio[i]].isDigital())
     {
-      digitalValues =
-          digitalValues | (uBit.io.pin[gpio[i]].getDigitalValue() << gpio[i]);
+      if (uBit.io.pin[gpio[i]].isInput())
+      {
+        digitalValues =
+            digitalValues | (uBit.io.pin[gpio[i]].getDigitalValue() << gpio[i]);
+      }
     }
   }
 }
