@@ -180,7 +180,7 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
       memcpy(text, &(data[1]), (params->len) - 1);
       text[(params->len) - 1] = '\0';
       ManagedString mstr(text);
-      uBit.display.stopAnimation(); // Do not wait the end of current animation as same as the standard extension.
+      uBit.display.stopAnimation();        // Do not wait the end of current animation as same as the standard extension.
       uBit.display.scrollAsync(mstr, 120); // Interval is corresponding with the standard extension.
     }
     else if (data[0] == ScratchBLECommand::CMD_DISPLAY_LED)
