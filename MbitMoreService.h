@@ -172,10 +172,6 @@ private:
    */
   PinMode pullMode[21];
 
-  /**
-   * Make it listen events of the event type on the pin.
-   * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
-   */
   void listenPinEventOn(int pinIndex, int eventType);
   void setPullMode(int pinIndex, PinMode pull);
   void setDigitalValue(int pinIndex, int value);
@@ -251,6 +247,14 @@ private:
     MIX_03 = 0x03,
     SHARED_DATA = 0x11,
     EVENT = 0x12,
+  };
+
+  enum MBitMorePinEventType
+  {
+    NONE = 0,
+    ON_EDGE = 1,
+    ON_PULSE = 2,
+    ON_TOUCH = 3
   };
 };
 

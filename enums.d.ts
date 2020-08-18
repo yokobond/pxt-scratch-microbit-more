@@ -1,23 +1,8 @@
 // Auto-generated. Do not edit.
 
 
-    declare const enum SharedDataIndex {
-    //% block="data0"
-    DATA0 = 0,
-    //% block="data1"
-    DATA1 = 1,
-    //% block="data2"
-    DATA2 = 2,
-    //% block="data3"
-    DATA3 = 3,
-    }
-declare namespace MbitMore {
-}
-
-
     /**
-     * Make it listen events of the event type on the pin.
-     * Remove listener if the event type is MICROBIT_PIN_EVENT_NONE.
+     * Current mode of all pins.
      */
 
     declare const enum ScratchBLECommand
@@ -58,5 +43,28 @@ declare namespace MbitMore {
     SHARED_DATA = 0x11,
     EVENT = 0x12,
     }
+
+
+    declare const enum MBitMorePinEventType
+    {
+    NONE = 0,
+    ON_EDGE = 1,
+    ON_PULSE = 2,
+    ON_TOUCH = 3,
+    }
+
+
+    declare const enum SharedDataIndex {
+    //% block="data0"
+    DATA0 = 0,
+    //% block="data1"
+    DATA1 = 1,
+    //% block="data2"
+    DATA2 = 2,
+    //% block="data3"
+    DATA3 = 3,
+    }
+declare namespace MbitMore {
+}
 
 // Auto-generated. Do not edit. Really.

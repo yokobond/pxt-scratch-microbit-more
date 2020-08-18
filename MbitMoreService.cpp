@@ -310,14 +310,27 @@ void MbitMoreService::listenPinEventOn(int pinIndex, int eventType)
   default:
     return;
   }
-  if (eventType == MICROBIT_PIN_EVENT_NONE)
+  if (eventType == MBitMorePinEventType::NONE)
   {
     uBit.messageBus.ignore(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent);
-    return;
+    uBit.io.pin[pinIndex].eventOn(MICROBIT_PIN_EVENT_NONE);
   }
-  uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
-  uBit.io.pin[pinIndex].getDigitalValue(); // Configure pin as digital input.
-  uBit.io.pin[pinIndex].eventOn(eventType);
+  else
+  {
+    uBit.messageBus.listen(componentID, MICROBIT_EVT_ANY, this, &MbitMoreService::onPinEvent, MESSAGE_BUS_LISTENER_DROP_IF_BUSY);
+    if (eventType == MBitMorePinEventType::ON_EDGE)
+    {
+      uBit.io.pin[pinIndex].eventOn(MICROBIT_PIN_EVENT_ON_EDGE);
+    }
+    else if (eventType == MBitMorePinEventType::ON_PULSE)
+    {
+      uBit.io.pin[pinIndex].eventOn(MICROBIT_PIN_EVENT_ON_PULSE);
+    }
+    else if (eventType == MBitMorePinEventType::ON_TOUCH)
+    {
+      uBit.io.pin[pinIndex].eventOn(MICROBIT_PIN_EVENT_ON_TOUCH);
+    }
+  }
 }
 
 /**
