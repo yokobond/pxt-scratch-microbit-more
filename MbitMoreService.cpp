@@ -522,16 +522,19 @@ void MbitMoreService::updateAnalogValues()
 {
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
+    int samplingCount;
+    int prevValue;
     int value;
     if (uBit.io.pin[analogIn[i]].isInput())
     {
       uBit.io.pin[analogIn[i]].setPull(PinMode::PullNone);
-      value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
-      if (value == 255)
+      // for accuracy, read more than 2 times to get same values continuously
+      do
       {
-        // Read again cause it may fail to read correct value.
+        prevValue = value;
         value = (uint16_t)uBit.io.pin[analogIn[i]].getAnalogValue();
-      }
+        samplingCount++;
+      } while (prevValue != value || samplingCount < 4);
       analogValues[i] = value;
       setPullMode(analogIn[i], pullMode[analogIn[i]]);
     }
