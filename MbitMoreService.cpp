@@ -9,6 +9,29 @@ int analogIn[] = {0, 1, 2};
 int digitalIn[] = {0, 1, 2}; // PullUp at connected to be same behaviour as the standard extension.
 
 /**
+ * Get voltage of the power supply [mV].
+ */
+int getPowerVoltage(void)
+{
+  // configuration
+  NRF_ADC->ENABLE = ADC_ENABLE_ENABLE_Enabled;
+  NRF_ADC->CONFIG = (ADC_CONFIG_RES_10bit << ADC_CONFIG_RES_Pos) |
+                    (ADC_CONFIG_INPSEL_SupplyOneThirdPrescaling << ADC_CONFIG_INPSEL_Pos) |
+                    (ADC_CONFIG_REFSEL_VBG << ADC_CONFIG_REFSEL_Pos) |
+                    (ADC_CONFIG_PSEL_Disabled << ADC_CONFIG_PSEL_Pos) |
+                    (ADC_CONFIG_EXTREFSEL_None << ADC_CONFIG_EXTREFSEL_Pos);
+
+  // read analog value from power supply
+  NRF_ADC->CONFIG &= ~ADC_CONFIG_PSEL_Msk;
+  NRF_ADC->CONFIG |= ADC_CONFIG_PSEL_Disabled << ADC_CONFIG_PSEL_Pos;
+  NRF_ADC->TASKS_START = 1;
+  while (((NRF_ADC->BUSY & ADC_BUSY_BUSY_Msk) >> ADC_BUSY_BUSY_Pos) == ADC_BUSY_BUSY_Busy)
+  {
+  };
+  return (int)(((float)NRF_ADC->RESULT * 3600.0f) / 1023.0f);
+}
+
+/**
   * Constructor.
   * Create a representation of the MbitMoreService
   * @param _uBit The instance of a MicroBit runtime.
@@ -159,6 +182,8 @@ void MbitMoreService::onReadAnalogIn(GattReadAuthCallbackParams *authParams)
   memcpy(&(analogInBuffer[0]), &(analogValues[0]), 2);
   memcpy(&(analogInBuffer[2]), &(analogValues[1]), 2);
   memcpy(&(analogInBuffer[4]), &(analogValues[2]), 2);
+  // voltage of power supply [mV] is sent as uint16_t little-endian.
+  memcpy(&(analogInBuffer[6]), &powerVoltage, 2);
   authParams->data = (uint8_t *)&analogInBuffer;
   authParams->offset = 0;
   authParams->len = sizeof(analogInBuffer) / sizeof(analogInBuffer[0]);
@@ -518,10 +543,16 @@ void MbitMoreService::updateDigitalValues()
   }
 }
 
+void MbitMoreService::updatePowerVoltage()
+{
+  powerVoltage = getPowerVoltage();
+}
+
 void MbitMoreService::updateAnalogValues()
 {
   for (size_t i = 0; i < sizeof(analogIn) / sizeof(analogIn[0]); i++)
   {
+    updatePowerVoltage();
     int samplingCount;
     int prevValue;
     int value;

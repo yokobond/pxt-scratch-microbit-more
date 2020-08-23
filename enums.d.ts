@@ -2,7 +2,7 @@
 
 
     /**
-     * Current mode of all pins.
+     * Voltage of the power supply in [mV]
      */
 
     declare const enum ScratchBLECommand

@@ -79,6 +79,7 @@ public:
   void update();
 
   void updateDigitalValues();
+  void updatePowerVoltage();
   void updateAnalogValues();
   void updateLightSensor();
   void updateAccelerometer();
@@ -104,7 +105,7 @@ private:
   uint8_t ioBuffer[4];
 
   // Sending data of analog input to Scratch.
-  uint8_t analogInBuffer[6];
+  uint8_t analogInBuffer[20];
 
   // Sending data of all sensors to Scratch.
   uint8_t sensorsBuffer[20];
@@ -171,6 +172,12 @@ private:
    * Current mode of all pins.
    */
   PinMode pullMode[21];
+  
+  /**
+   * Voltage of the power supply in [mV]
+   */
+  int powerVoltage;
+
 
   void listenPinEventOn(int pinIndex, int eventType);
   void setPullMode(int pinIndex, PinMode pull);
