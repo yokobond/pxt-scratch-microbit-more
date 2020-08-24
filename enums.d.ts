@@ -13,6 +13,7 @@
     CMD_PROTOCOL = 0x90,
     CMD_PIN = 0x91,
     CMD_SHARED_DATA = 0x92,
+    CMD_LIGHT_SENSING = 0x93,
     }
 
 

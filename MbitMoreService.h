@@ -72,6 +72,11 @@ public:
   void onBLEConnected(MicroBitEvent e);
 
   /**
+   * Invocked when the bluetooth disconnected.
+   */
+  void onBLEDisconnected(MicroBitEvent e);
+
+  /**
    * Callback. Invoked when a pin event sent.
    */
   void onPinEvent(MicroBitEvent evt);
@@ -142,6 +147,8 @@ private:
    */
   int lightLevel;
 
+  int lightSensingDuration;
+
   /**
    * Acceleration value [x, y, z] in milli-g.
    */
@@ -178,6 +185,7 @@ private:
   void setAnalogValue(int pinIndex, int value);
   void setServoValue(int pinIndex, int angle, int range, int center);
   void setPinModeTouch(int pinIndex);
+  void setLightSensingDuration(int duration);
 
   void onButtonChanged(MicroBitEvent);
   void onGestureChanged(MicroBitEvent);
@@ -220,7 +228,8 @@ private:
     CMD_DISPLAY_LED = 0x82,
     CMD_PROTOCOL = 0x90,
     CMD_PIN = 0x91,
-    CMD_SHARED_DATA = 0x92
+    CMD_SHARED_DATA = 0x92,
+    CMD_LIGHT_SENSING = 0x93
   };
 
   enum MBitMorePinCommand
