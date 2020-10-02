@@ -154,6 +154,7 @@ MbitMoreService::MbitMoreService(MicroBit &_uBit)
   uBit.ble->onDataWritten(this, &MbitMoreService::onDataWritten);
 
   uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_CONNECTED, this, &MbitMoreService::onBLEConnected, MESSAGE_BUS_LISTENER_IMMEDIATE);
+  uBit.messageBus.listen(MICROBIT_ID_BLE, MICROBIT_BLE_EVT_DISCONNECTED, this, &MbitMoreService::onBLEDisconnected, MESSAGE_BUS_LISTENER_IMMEDIATE);
 
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_A, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
   uBit.messageBus.listen(MICROBIT_ID_BUTTON_B, MICROBIT_EVT_ANY, this, &MbitMoreService::onButtonChanged, MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -294,6 +295,10 @@ void MbitMoreService::onDataWritten(const GattWriteCallbackParams *params)
     else if (data[0] == ScratchBLECommand::CMD_PROTOCOL)
     {
       mbitMoreProtocol = data[1];
+    }
+    else if (data[0] == ScratchBLECommand::CMD_LIGHT_SENSING)
+    {
+      setLightSensingDuration(data[1]);
     }
   }
 }
@@ -581,7 +586,16 @@ void MbitMoreService::updateAnalogValues()
 
 void MbitMoreService::updateLightSensor()
 {
+  if (lightSensingDuration <= 0)
+  {
+    uBit.display.setDisplayMode(DisplayMode::DISPLAY_MODE_BLACK_AND_WHITE);
+    return;
+  }
   lightLevel = uBit.display.readLightLevel();
+  if (lightSensingDuration < 255) // over 255 means no-limited.
+  {
+    lightSensingDuration--;
+  }
 }
 
 void MbitMoreService::updateAccelerometer()
@@ -625,6 +639,11 @@ void MbitMoreService::setServoValue(int pinIndex, int angle, int range, int cent
 void MbitMoreService::setPinModeTouch(int pinIndex)
 {
   uBit.io.pin[pinIndex].isTouched(); // Configure to touch mode then the return value is not used.
+}
+
+void MbitMoreService::setLightSensingDuration(int duration)
+{
+  lightSensingDuration = duration;
 }
 
 void MbitMoreService::composeDefaultData(uint8_t *buff)
@@ -714,6 +733,12 @@ void MbitMoreService::onBLEConnected(MicroBitEvent _e)
   uBit.display.stopAnimation(); // To stop display friendly name.
   initConfiguration();
   uBit.display.scrollAsync("v.0.4.3");
+  lightSensingDuration = 255; // Continuous light sensing for GUI v0.4.2
+}
+
+void MbitMoreService::onBLEDisconnected(MicroBitEvent _e)
+{
+  lightSensingDuration = 0;
 }
 
 /**
