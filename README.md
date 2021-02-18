@@ -1,3 +1,5 @@
+**This project moved to a new repository [yokobond/pxt-mbit-more-v2](https://github.com/yokobond/pxt-mbit-more-v2)**
+
 # pxt-mbit-more
 
 Enhanced Scratch3 micro:bit extension. (beta)
